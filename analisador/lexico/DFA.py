@@ -1,8 +1,11 @@
 from collections.abc import Callable
-from typing import Any
+from typing import Any, TypeAlias
 
 from .noop import noop
 from .DFAState import DFAState
+
+# TODO: Change "Callable[[Any, DFAState, str, DFAState]" to "Callable[[DFA, DFAState, str, DFAState]"
+TransitionsList: TypeAlias = list[tuple[DFAState, str | set[str], DFAState, Callable[[Any, DFAState, str, DFAState], Any]]]
 
 class DFA:
     
@@ -11,8 +14,7 @@ class DFA:
                  states: list[DFAState],
                  initial_state: DFAState,
                  accept_states: list[DFAState],
-                 # TODO: Change "Callable[[Any, DFAState, str, DFAState]" to "Callable[[DFA, DFAState, str, DFAState]"
-                 transitions: list[tuple[DFAState, str | set[str], DFAState, Callable[[Any, DFAState, str, DFAState], Any]]]
+                 transitions: TransitionsList
                 ):
         self.alphabet = alphabet
         self.states = states
@@ -50,9 +52,9 @@ class DFA:
         return self.current_state in self.accept_states
     
     @staticmethod
-    def process_transitions(transitions):
+    def process_transitions(transitions: TransitionsList):
         # Expands transitions on 'set of symbols'
-        processed_transitions = []
+        processed_transitions: TransitionsList = []
         for transition in transitions:
             transition_symbol_or_symbols = transition[1]
             if isinstance(transition_symbol_or_symbols, set):
