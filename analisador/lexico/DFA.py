@@ -66,6 +66,27 @@ class DFA:
             else:
                 processed_transitions.append(transition)
         return processed_transitions
+    
+    def compile_to_zuzak_fsm_simulator(self):
+        output = ""
+        output += "#states\n"
+        for state in self.states:
+            output += f"{state.name}\n"
+        output += "#initial\n"
+        output += f"{self.initial_state.name}\n"
+        output += "#accepting\n"
+        for state in self.accept_states:
+            output += f"{state.name}\n"
+        output += "#alphabet\n"
+        for symbol in self.alphabet:
+            symbol = symbol if symbol != '\n' else '§'
+            output += f"{symbol}\n"
+        output += "#transitions\n"
+        for transition in self.transitions:
+            symb = transition[1] if transition[1] != '\n' else '§'
+            output += f"{transition[0].name}:{symb}>{transition[2].name}\n"
+        return output
+
 
 
 
