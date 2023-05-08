@@ -1,11 +1,9 @@
-from collections.abc import Callable
-from typing import Any, TypeAlias
+from typing import TypeAlias
 
-from .noop import noop
 from .DFAState import DFAState
 
 # TODO: Change "Callable[[Any, DFAState, str, DFAState]" to "Callable[[DFA, DFAState, str, DFAState]"
-TransitionsList: TypeAlias = list[tuple[DFAState, str | set[str], DFAState, Callable[[Any, DFAState, str, DFAState], Any]]]
+TransitionsList: TypeAlias = list[tuple[DFAState, str | set[str], DFAState]]
 
 class DFA:
     
@@ -14,7 +12,7 @@ class DFA:
                  states: list[DFAState],
                  initial_state: DFAState,
                  accept_states: list[DFAState],
-                 transitions: TransitionsList
+                 transitions: TransitionsList,
                 ):
         self.alphabet = alphabet
         self.states = states
@@ -25,21 +23,18 @@ class DFA:
 
     def go_to_next_state(self, symbol: str):
         assert symbol in self.alphabet, f"O caractere \"{symbol}\" não é parte do alfabeto" # TODO: Improve: detect missing transitions at __init__ time
-        
+        next_state: DFAState = self.get_next_state(symbol)
+        assert next_state.name != 'invalid', f"Transição inválida: {self.current_state.name} : {symbol}" # TODO: Improve: detect missing transitions at __init__ time
+        self.current_state = next_state
+
+    def get_next_state(self, symbol: str):
         next_state: DFAState = DFAState("invalid")
-        transition_action: Callable[[DFA, DFAState, str, DFAState], Any] = noop
-        
         for transition in self.transitions:
             if transition[0] == self.current_state and transition[1] == symbol:
                 next_state = transition[2]
-                transition_action = transition[3]
-        print(self.current_state.name, symbol, next_state.name)
-
-        assert next_state.name != 'invalid', f"Transição inválida: {self.current_state.name} : {symbol}" # TODO: Improve: detect missing transitions at __init__ time
-        
-        transition_action(self, self.current_state, symbol, next_state)
-        self.current_state = next_state
-
+                break
+        return next_state
+    
     def reinit(self):
         self.current_state = self.initial_state
 
@@ -60,12 +55,11 @@ class DFA:
             if isinstance(transition_symbol_or_symbols, set):
                 transition_expansion = []
                 for c in transition_symbol_or_symbols:
-                    transition_expansion.append((transition[0], c, transition[2], transition[3]))
+                    transition_expansion.append((transition[0], c, transition[2]))
                 processed_transitions.extend(transition_expansion)
             else:
                 processed_transitions.append(transition)
         return processed_transitions
-
 
 
 
