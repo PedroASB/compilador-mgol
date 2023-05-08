@@ -44,7 +44,13 @@ class DFA:
 
     def accepts(self, string: str) -> bool:
         self.consume_string(string)
+        return self.is_in_accept_state()
+    
+    def is_in_accept_state(self):
         return self.current_state in self.accept_states
+    
+    def is_in_initial_state(self):
+        return self.current_state == self.initial_state
     
     @staticmethod
     def process_transitions(transitions: TransitionsList):
