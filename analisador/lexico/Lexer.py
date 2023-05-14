@@ -5,7 +5,7 @@ from analisador.lexico.DFAState import DFAState
 class Lexer:
     _NEW_LINE_ = '\n'
     _EOF_ = ''
-    _ERROR_STATE_ = DFAState('ERROR')
+    _INVALID_ = DFAState('invalid')
 
     def __init__(self, input_reader: TextIOWrapper, dfa: DFA, reserved_words: list[str]):
         self.dfa = dfa
@@ -37,15 +37,16 @@ class Lexer:
         while not self.is_finished:
             next_state = self.get_next_state()
 
-            if next_state == Lexer._ERROR_STATE_:
-                yield self.get_current_token()
+            if next_state == Lexer._INVALID_:
+                if not self.buffer_is_empty():
+                    yield self.get_current_token()
                 if self.is_in_initial_state():
                     self.handle_error()
                     self.load_next_symbol()
                 self.go_to_initial_state()
                 self.reset_buffer()
             else:
-                self.dfa.go_to_next_state(self.current_symbol)
+                self.go_to_next_state() 
                 self.append_current_symbol_to_buffer()
 
                 match self.current_symbol:
@@ -53,7 +54,7 @@ class Lexer:
                         self.increment_line()
                         self.reset_column()
                     case Lexer._EOF_:
-                        self.finish() # ou seria melhor um simples break?
+                        self.finish()
                 
                 self.load_next_symbol()
 
@@ -73,6 +74,9 @@ class Lexer:
         current_state = self.dfa.current_state
         # TODO: Map state to token classification
         return (token, current_state)
+    
+    def buffer_is_empty(self):
+        return self.buffer == ""
     
     def get_next_state(self):
         return self.dfa.get_next_state(self.current_symbol)
