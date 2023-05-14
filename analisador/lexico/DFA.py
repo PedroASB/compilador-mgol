@@ -21,21 +21,33 @@ class DFA:
         self.transitions = DFA.process_transitions(transitions)
         self.current_state = initial_state
 
+        # TODO: Extract this validation to a function
+        for state in self.states:
+            assert state.name != 'invalid', "A user-created state cannot be named 'invalid'"
+
+        for transition in self.transitions:
+            transition_state_from, transition_symbol, transition_state_to = transition
+            assert transition_state_from in self.states and transition_state_to in self.states, "Transition contains state that does not belong to the DFA states set: " + transition_state_from.name + ' : "' + transition_symbol + '" -> ' + transition_state_to.name
+    
     def go_to_next_state(self, symbol: str):
-        assert symbol in self.alphabet, f"O caractere \"{symbol}\" não é parte do alfabeto" # TODO: Improve: detect missing transitions at __init__ time
+        assert symbol in self.alphabet, f"The symbol \"{symbol}\" does not belong to the DFA alphabet"
         next_state: DFAState = self.get_next_state(symbol)
-        assert next_state.name != 'invalid', f"Transição inválida: {self.current_state.name} : {symbol}" # TODO: Improve: detect missing transitions at __init__ time
+        assert next_state.name != 'invalid', f"Invalid transition: {self.current_state.name} : {symbol}"
         self.current_state = next_state
 
     def get_next_state(self, symbol: str):
         next_state: DFAState = DFAState("invalid")
         for transition in self.transitions:
-            if transition[0] == self.current_state and transition[1] == symbol:
+            transition_state_from, transition_symbol, _ = transition 
+            if (transition_state_from, transition_symbol) == (self.current_state, symbol):
                 next_state = transition[2]
                 break
         return next_state
     
     def reinit(self):
+        self.go_to_initial_state()
+
+    def go_to_initial_state(self):
         self.current_state = self.initial_state
 
     def consume_string(self, string: str):
@@ -79,11 +91,11 @@ class DFA:
             output += f"{state.name}\n"
         output += "#alphabet\n"
         for symbol in self.alphabet:
-            symbol = symbol if symbol != '\n' else '§'
+            symbol = symbol if symbol != '\n' else '¬'
             output += f"{symbol}\n"
         output += "#transitions\n"
         for transition in self.transitions:
-            symb = transition[1] if transition[1] != '\n' else '§'
+            symb = transition[1] if transition[1] != '\n' else '¬'
             output += f"{transition[0].name}:{symb}>{transition[2].name}\n"
         return output
 
