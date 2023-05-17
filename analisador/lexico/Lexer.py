@@ -1,4 +1,5 @@
 from io import TextIOWrapper
+from collections.abc import Iterator
 from analisador.lexico.DFA import DFA
 from analisador.lexico.DFAState import DFAState
 
@@ -17,48 +18,40 @@ class Lexer:
         self.input_reader = input_reader
         self.is_finished = False
 
-    def load_next_symbol(self):
+        self.input_reader.seek(0)
+        self.load_next_symbol_and_increment_column()
+        self.token_iterator = self.get_token_iterator()
+
+    def load_next_symbol_and_increment_column(self):
         self.increment_column()
         self.current_symbol = self.input_reader.read(1)
-
-    def print_current_state(self):
-        print(f"""
-            current_symbol: {self.current_symbol}
-            state: {self.dfa.current_state.name}
-            initial_state? {self.dfa.is_in_initial_state()}
-            next_state: {self.get_next_state().name}
-        """)
     
-    def get_token_stream(self):
-        self.is_finished = False
-        self.input_reader.seek(0)
-        self.load_next_symbol()
-
+    def get_token_iterator(self) -> Iterator[tuple]:
         while not self.is_finished:
             next_state = self.get_next_state()
 
-            if next_state == Lexer._INVALID_:
-                if not self.buffer_is_empty():
-                    yield self.get_current_token()
-                if self.is_in_initial_state():
-                    self.handle_error()
-                    self.load_next_symbol()
-                self.go_to_initial_state()
-                self.reset_buffer()
-            else:
-                self.go_to_next_state() 
+            if next_state != Lexer._INVALID_:
+                self.go_to_next_state()
                 self.append_current_symbol_to_buffer()
-
                 match self.current_symbol:
                     case Lexer._NEW_LINE_:
                         self.increment_line()
                         self.reset_column()
                     case Lexer._EOF_:
+                        yield self.get_current_token()
                         self.finish()
-                
-                self.load_next_symbol()
+                self.load_next_symbol_and_increment_column()
+            else:
+                if not self.buffer_is_empty():
+                    yield self.get_current_token()
+                if self.is_in_initial_state():
+                    self.handle_error()
+                    self.load_next_symbol_and_increment_column()
+                self.go_to_initial_state()
+                self.reset_buffer()
 
-        yield self.get_current_token()
+    def scanner(self) -> tuple:
+        return next(self.token_iterator)
 
     def append_current_symbol_to_buffer(self):
         self.buffer += self.current_symbol
