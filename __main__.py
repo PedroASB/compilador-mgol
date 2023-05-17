@@ -6,13 +6,17 @@ if __name__ == '__main__':
 
     mgol_lexer = Lexer(
         open(arquivo_codigo_fonte, 'r', encoding="utf-8"),
-        DFAReader(open(r"./analisador/lexico/automata.dfa", 'r', encoding='utf-8')).read(),
+        DFAReader(open(r"./analisador/lexico/automaton.dfa", 'r', encoding='utf-8')).read(),
         ["inicio", "varinicio", "varfim", "escreva", "leia", "entao", "fimse", "repita", "fimrepita", "fim", "inteiro", "literal", "real"]
     )
 
     print('\n==================================')
     print('==================================')
-    for token in mgol_lexer.get_token_stream():
-        print(token[0] if token[0] != '\n' else '%NL%', ':::', token[1].name)
 
-
+    try:
+        while True:
+            token = mgol_lexer.scanner()
+            if token:
+                print(f"Classe: {token[0]}, Lexema: {token[1]}, Tipo: {token[2]}")
+    except StopIteration:
+        print('=== END ===')
