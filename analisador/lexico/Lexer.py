@@ -3,6 +3,7 @@ from typing import TypeAlias
 from collections.abc import Iterator
 from analisador.lexico.DFA import DFA
 from analisador.lexico.DFAState import DFAState
+from analisador.lexico.consts import state_token_type_map
 
 Token: TypeAlias = tuple[str, str, str]
 
@@ -10,29 +11,6 @@ class Lexer:
     _NEW_LINE_ = '\n'
     _EOF_ = ''
     _INVALID_ = DFAState('invalid')
-
-    # TODO: place this out of the class
-    tokens_classes_and_types = {
-        "ART_OP": ("OPM", "Nulo"),
-        "ASSIGN": ("RCB", "Nulo"),
-        "CL_PAR": ("FC_P", "Nulo"),
-        "COMMA": ("VIR", "Nulo"),
-        "COMMENT_2": ("Comentário", "Nulo"),
-        "EOF": ("EOF", "Nulo"),
-        "ID": ("id", "Nulo"),
-        "INT": ("Num", "inteiro"),
-        "LIT_2": ("LIT", "literal"),
-        "NL": ("Ignorar", "Nulo"),
-        "OP_PAR": ("AB_P", "Nulo"),
-        "REAL_3": ("Num", "real"),
-        "REAL_5": ("Num", "real"),
-        "REL_OP_1": ("OPR", "Nulo"),
-        "REL_OP_2": ("OPR", "Nulo"),
-        "REL_OP_3": ("OPR", "Nulo"),
-        "S_COL": ("PT_V", "Nulo"),
-        "SPACE": ("Ignorar", "Nulo"),
-        "TAB": ("Ignorar", "Nulo"),
-    }
 
     def __init__(self, input_reader: TextIOWrapper, dfa: DFA, reserved_words: list[str]):
         self.dfa = dfa
@@ -71,9 +49,14 @@ class Lexer:
             else:
                 if not self.buffer_is_empty():
                     yield self.get_current_token()
-                if self.is_in_initial_state() or self.dfa.current_state == DFAState('COMMENT_1') or self.dfa.current_state == DFAState('LIT_1'):
+                
+                if self.is_in_initial_state() or \
+                    self.is_in_incomplete_comment_state() or \
+                    self.is_in_incomplete_literal_state():
+
                     self.handle_error()
                     self.load_next_symbol_and_increment_column()
+
                 self.go_to_initial_state()
                 self.reset_buffer()
 
@@ -91,11 +74,11 @@ class Lexer:
         error_message = None
         if self.current_symbol not in self.dfa.alphabet:
             error_message = "Caractere não pertence ao alfabeto da linguagem"
-        if self.dfa.current_state == self.dfa.initial_state:
+        if self.get_current_state() == self.dfa.initial_state:
             error_message = "Caractere não esperado"
-        if self.dfa.current_state == DFAState('COMMENT_1'):
+        if self.get_current_state() == DFAState('COMMENT_1'):
             error_message = "Comentário não finalizado"
-        if self.dfa.current_state == DFAState('LIT_1'):
+        if self.get_current_state() == DFAState('LIT_1'):
             error_message = "Literal não finalizado"
             
         print('ERRO LÉXICO -', self.get_formatted_line_and_column())
@@ -105,7 +88,7 @@ class Lexer:
         lexeme = self.buffer
         current_state = self.dfa.current_state
         try:
-            class_name, type_name = Lexer.tokens_classes_and_types[current_state.name]
+            class_name, type_name = state_token_type_map[current_state.name]
         except KeyError:
             class_name, type_name = ("ERRO", "Nulo")
         # TODO: Map state to token classification
@@ -128,6 +111,12 @@ class Lexer:
 
     def is_in_initial_state(self):
         return self.dfa.is_in_initial_state()
+    
+    def is_in_incomplete_comment_state(self):
+        return self.dfa.current_state == DFAState('COMMENT_1')
+    
+    def is_in_incomplete_literal_state(self):
+        return self.dfa.current_state == DFAState('LIT_1')
         
     def increment_line(self):
         self.line += 1

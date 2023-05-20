@@ -19,7 +19,7 @@ class DFAReader:
     def read_alphabet(self):
         while (line := self.file.readline().strip()) != "":
             try:
-                self.alphabet.extend(consts.dictionary[line])
+                self.alphabet.extend(consts.alphabet_dictionary[line])
             except KeyError as e:
                 raise ('Esse conjunto não existe: ' + line) from e
 
@@ -35,7 +35,7 @@ class DFAReader:
         while (line := self.file.readline().strip()) != "":
             state_from, symbol_set, state_to = line.split(',')
             try:
-                processed_symbols = consts.dictionary[symbol_set]
+                processed_symbols = consts.alphabet_dictionary[symbol_set]
             except KeyError as e:
                 raise ('Esse conjunto não existe: ' + symbol_set) from e
             

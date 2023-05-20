@@ -32,7 +32,7 @@ LETTERS = UPPER_LETTERS | LOWER_LETTERS
 ARITHMETIC_OPERATORS = PLUS_SIGN | MINUS_SIGN | STAR | FORWARD_SLASH
 UNION_ALPHABET = DIGITS | LETTERS | COMMA | SEMICOLON | COLON | EXCL_MARK | BACKSLASH | STAR | PLUS_SIGN | MINUS_SIGN | FORWARD_SLASH | OPEN_PARENTHESIS | CLOSE_PARENTHESIS | OPEN_BRACE | CLOSE_BRACE | OPEN_BRACKET | CLOSE_BRACKET | GREATER_THAN | LESS_THAN | EQUAL | PERIOD | QUOTE | DOUBLE_QUOTE | UNDERLINE | NL | TAB | SPACE | POWER | EOF
 
-dictionary = {
+alphabet_dictionary = {
     "DIGITS": DIGITS,
     "UPPER_LETTERS": UPPER_LETTERS,
     "LOWER_LETTERS": LOWER_LETTERS,
@@ -69,3 +69,26 @@ dictionary = {
     "AB_WITHOUT_DOUBLE_QUOTE": UNION_ALPHABET - DOUBLE_QUOTE - EOF,
     "AB_WITHOUT_CL_BRACE": UNION_ALPHABET - CLOSE_BRACE - EOF
 }
+
+state_token_type_map = {
+        "ART_OP": ("OPM", "Nulo"),
+        "ASSIGN": ("RCB", "Nulo"),
+        "CL_PAR": ("FC_P", "Nulo"),
+        "COMMA": ("VIR", "Nulo"),
+        "COMMENT_2": ("Comentário", "Nulo"),
+        "EOF": ("EOF", "Nulo"),
+        "ID": ("id", "Nulo"),
+        "INT": ("Num", "inteiro"),
+        "LIT_2": ("LIT", "literal"),
+        "NL": ("Ignorar", "Nulo"),
+        "OP_PAR": ("AB_P", "Nulo"),
+        "REAL_3": ("Num", "real"),
+        "REAL_5": ("Num", "real"),
+        "REL_OP_1": ("OPR", "Nulo"),
+        "REL_OP_2": ("OPR", "Nulo"),
+        "REL_OP_3": ("OPR", "Nulo"),
+        "S_COL": ("PT_V", "Nulo"),
+        "SPACE": ("Ignorar", "Nulo"),
+        "TAB": ("Ignorar", "Nulo"),
+    }
+
