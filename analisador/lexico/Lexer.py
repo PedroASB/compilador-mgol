@@ -79,11 +79,11 @@ class Lexer:
     def handle_error(self):
         if self.current_symbol not in self.dfa.alphabet:
             error_message = "Caractere não pertence ao alfabeto da linguagem"
-        if self.get_current_state() == self.dfa.initial_state:
+        if self.is_in_initial_state():
             error_message = "Caractere não esperado"
-        if self.get_current_state() == DFAState('COMMENT_1'):
+        if self.is_in_incomplete_comment_state():
             error_message = "Comentário não finalizado"
-        if self.get_current_state() == DFAState('LIT_1'):
+        if self.is_in_incomplete_literal_state():
             error_message = "Literal não finalizado"
             
         self.errors.append('ERRO LÉXICO - ' + error_message + ' - ' + self.get_formatted_line_and_column())
