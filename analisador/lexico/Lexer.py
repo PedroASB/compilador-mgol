@@ -44,12 +44,12 @@ class Lexer:
                         self.increment_line()
                         self.reset_column()
                     case Lexer._EOF_:
-                        yield self.get_current_token()
+                        yield self.get_and_classify_current_token()
                         self.finish()
                 self.load_next_symbol_and_increment_column()
             else:
                 if not self.buffer_is_empty():
-                    yield self.get_current_token()
+                    yield self.get_and_classify_current_token()
                 
                 if self.is_in_initial_state() or \
                     self.is_in_incomplete_comment_state() or \
@@ -88,14 +88,13 @@ class Lexer:
             
         self.errors.append('ERRO LÉXICO - ' + error_message + ' - ' + self.get_formatted_line_and_column())
 
-    def get_current_token(self) -> Token:
+    def get_and_classify_current_token(self) -> Token:
         lexeme = self.buffer
         current_state = self.dfa.current_state
         try:
             class_name, type_name = state_token_type_map[current_state.name]
         except KeyError:
             class_name, type_name = ("ERRO", "Nulo")
-        # TODO: Map state to token classification
         return (class_name, lexeme, type_name)
     
     def buffer_is_empty(self):
