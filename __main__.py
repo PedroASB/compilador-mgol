@@ -2,21 +2,16 @@ from analisador.lexico.Lexer import Lexer
 from analisador.lexico.DFAReader import DFAReader
 
 if __name__ == '__main__':
-    arquivo_codigo_fonte = r"./test.mgol"
-
-    mgol_lexer = Lexer(
-        open(arquivo_codigo_fonte, 'r', encoding="utf-8"),
-        DFAReader(open(r"./analisador/lexico/automaton.dfa", 'r', encoding='utf-8')).read(),
-        ["inicio", "varinicio", "varfim", "escreva", "leia", "se", "entao", "fimse", "repita", "fimrepita", "fim", "inteiro", "literal", "real"]
-    )
-
-    print('\n==================================')
-    print('==================================')
-
+    source_code_file = r"./source.mgol"
+    dfa = DFAReader(open(r"./analisador/lexico/automaton.dfa", 'r', encoding='utf-8')).read()
+    reserved_words = {"inicio", "varinicio", "varfim", "escreva", 
+                      "leia", "se", "entao", "fimse", "repita", "fimrepita", "fim", "inteiro", "literal", "real"}
+    mgol_lexer = Lexer(open(source_code_file, 'r', encoding="utf-8"), dfa, reserved_words)
+    
     while True:
         token = mgol_lexer.scanner()
         if token:
-            class_name, lexeme, type_name = token[0], token[1], token[2]
+            class_name, lexeme, type_name = token['class'], token['lexeme'], token['type']
             if class_name == "ERRO":
                 print("ERRO")
             else:        

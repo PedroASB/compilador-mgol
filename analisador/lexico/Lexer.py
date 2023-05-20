@@ -5,14 +5,14 @@ from analisador.lexico.DFA import DFA
 from analisador.lexico.DFAState import DFAState
 from analisador.lexico.consts import state_token_type_map
 
-Token: TypeAlias = tuple[str, str, str]
+Token: TypeAlias = dict[str, str]
 
 class Lexer:
     _NEW_LINE_ = '\n'
     _EOF_ = ''
     _INVALID_ = DFAState('invalid')
 
-    def __init__(self, input_reader: TextIOWrapper, dfa: DFA, reserved_words: list[str]):
+    def __init__(self, input_reader: TextIOWrapper, dfa: DFA, reserved_words: set[str]):
         self.dfa = dfa
         self.reserved_words = reserved_words
         self.line = 1
@@ -64,7 +64,7 @@ class Lexer:
     def scanner(self) -> Token | None:
         try:
             token = next(self.token_iterator)
-            while token[0] == "Ignorar":
+            while token['class'] == "Ignorar":
                 token = next(self.token_iterator)
             return token
         except StopIteration:
@@ -99,7 +99,7 @@ class Lexer:
                 lexeme = "EOF"
         except KeyError:
             class_name, type_name = ("ERRO", "Nulo")
-        return (class_name, lexeme, type_name)
+        return {'class': class_name, 'lexeme': lexeme, 'type': type_name}
     
     def buffer_is_empty(self):
         return self.buffer == ""
