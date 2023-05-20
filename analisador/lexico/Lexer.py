@@ -22,6 +22,7 @@ class Lexer:
         self.input_reader = input_reader
         self.is_finished = False
         self.symbol_table: list[Token] = []
+        self.errors: list[str] = []
 
         self.input_reader.seek(0)
         self.load_next_symbol_and_increment_column()
@@ -61,8 +62,13 @@ class Lexer:
                 self.reset_buffer()
 
     def scanner(self) -> Token | None:
-        token = next(self.token_iterator)
-        return token if token[0] != "Ignorar" else None
+        try:
+            token = next(self.token_iterator)
+            while token[0] == "Ignorar":
+                token = next(self.token_iterator)
+            return token
+        except StopIteration:
+            return None
 
     def append_current_symbol_to_buffer(self):
         self.buffer += self.current_symbol
@@ -71,7 +77,6 @@ class Lexer:
         return f"Linha: {self.line}, Coluna: {self.column}"
 
     def handle_error(self):
-        error_message = None
         if self.current_symbol not in self.dfa.alphabet:
             error_message = "Caractere não pertence ao alfabeto da linguagem"
         if self.get_current_state() == self.dfa.initial_state:
@@ -81,8 +86,7 @@ class Lexer:
         if self.get_current_state() == DFAState('LIT_1'):
             error_message = "Literal não finalizado"
             
-        print('ERRO LÉXICO -', self.get_formatted_line_and_column())
-        print(error_message)
+        self.errors.append('ERRO LÉXICO - ' + error_message + ' - ' + self.get_formatted_line_and_column())
 
     def get_current_token(self) -> Token:
         lexeme = self.buffer
