@@ -1,8 +1,6 @@
 from typing import TypeAlias
-
 from .DFAState import DFAState
 
-# TODO: Change "Callable[[Any, DFAState, str, DFAState]" to "Callable[[DFA, DFAState, str, DFAState]"
 TransitionsList: TypeAlias = list[tuple[DFAState, str | set[str], DFAState]]
 
 class DFA:
@@ -23,16 +21,16 @@ class DFA:
 
         # TODO: Extract this validation to a function
         for state in self.states:
-            assert state.name != 'invalid', "A user-created state cannot be named 'invalid'"
+            assert state.name != 'invalid', "Um estado criado por usuário não pode ser nomeado 'invalid'"
 
         for transition in self.transitions:
             transition_state_from, transition_symbol, transition_state_to = transition
-            assert transition_state_from in self.states and transition_state_to in self.states, "Transition contains state that does not belong to the DFA states set: " + transition_state_from.name + ' : "' + transition_symbol + '" -> ' + transition_state_to.name
+            assert transition_state_from in self.states and transition_state_to in self.states, "A transição contém um estado que não pertence ao conjunto de estados do DFA: " + transition_state_from.name + ' : "' + transition_symbol + '" -> ' + transition_state_to.name
     
     def go_to_next_state(self, symbol: str):
-        assert symbol in self.alphabet, f"The symbol \"{symbol}\" does not belong to the DFA alphabet"
+        assert symbol in self.alphabet, f"O símbolo \"{symbol}\" não pertence ao alfabeto do DFA"
         next_state: DFAState = self.get_next_state(symbol)
-        assert next_state.name != 'invalid', f"Invalid transition: {self.current_state.name} : {symbol}"
+        assert next_state.name != 'invalid', f"Transição inválida: {self.current_state.name} : {symbol}"
         self.current_state = next_state
 
     def get_next_state(self, symbol: str):
