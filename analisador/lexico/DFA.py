@@ -18,15 +18,8 @@ class DFA:
         self.accept_states = accept_states
         self.transitions = DFA.process_transitions(transitions)
         self.current_state = initial_state
-
-        # TODO: Extract this validation to a function
-        for state in self.states:
-            assert state.name != 'invalid', "Um estado criado por usuário não pode ser nomeado 'invalid'"
-
-        for transition in self.transitions:
-            transition_state_from, transition_symbol, transition_state_to = transition
-            assert transition_state_from in self.states and transition_state_to in self.states, "A transição contém um estado que não pertence ao conjunto de estados do DFA: " + transition_state_from.name + ' : "' + transition_symbol + '" -> ' + transition_state_to.name
-    
+        self.validate()
+        
     def go_to_next_state(self, symbol: str):
         assert symbol in self.alphabet, f"O símbolo \"{symbol}\" não pertence ao alfabeto do DFA"
         next_state: DFAState = self.get_next_state(symbol)
@@ -77,6 +70,14 @@ class DFA:
                 processed_transitions.append(transition)
         return processed_transitions
     
+    def validate(self):
+        for state in self.states:
+            assert state.name != 'invalid', "Um estado criado por usuário não pode ser nomeado 'invalid'"
+
+        for transition in self.transitions:
+            transition_state_from, transition_symbol, transition_state_to = transition
+            assert transition_state_from in self.states and transition_state_to in self.states, "A transição contém um estado que não pertence ao conjunto de estados do DFA: " + transition_state_from.name + ' : "' + transition_symbol + '" -> ' + transition_state_to.name
+
     def compile_to_zuzak_fsm_simulator(self):
         output = ""
         output += "#states\n"
