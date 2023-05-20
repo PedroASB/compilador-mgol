@@ -68,7 +68,7 @@ if __name__ == '__main__':
         try:
             dfa: DFA = DFAReader(file).read()
         except KeyError as e:
-            print("Aff... : " + e)
+            print("Error: ", e)
         # print('Alfabeto: ', end='')
         # print(dfa.alphabet)
         # print('\nInicial: ' + dfa.initial_state.name)

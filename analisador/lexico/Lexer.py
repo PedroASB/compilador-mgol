@@ -93,6 +93,10 @@ class Lexer:
         current_state = self.dfa.current_state
         try:
             class_name, type_name = state_token_type_map[current_state.name]
+            if class_name == "id" and lexeme in self.reserved_words:
+                class_name, type_name = lexeme, lexeme
+            elif class_name == "EOF":
+                lexeme = "EOF"
         except KeyError:
             class_name, type_name = ("ERRO", "Nulo")
         return (class_name, lexeme, type_name)

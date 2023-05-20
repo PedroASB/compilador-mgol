@@ -55,6 +55,9 @@ class DFA:
     def is_in_initial_state(self):
         return self.current_state == self.initial_state
     
+    def is_in_state(self, state_name: str):
+        return self.current_state == DFAState(state_name)
+    
     @staticmethod
     def process_transitions(transitions: TransitionsList):
         # Expands transitions on 'set of symbols'
