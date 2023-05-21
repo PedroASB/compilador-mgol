@@ -23,10 +23,17 @@ class Lexer:
         self.is_finished = False
         self.symbol_table: list[Token] = []
         self.errors: list[str] = []
+        self.initialize_symbol_table()
 
         self.input_reader.seek(0)
         self.load_next_symbol_and_increment_column()
         self.token_iterator = self.get_token_iterator()
+
+    def initialize_symbol_table(self):
+        for reserved_word in self.reserved_words:
+            self.symbol_table.append({'class': reserved_word, 
+                                      'lexeme': reserved_word, 
+                                      'type': reserved_word})
 
     def load_next_symbol_and_increment_column(self):
         self.increment_column()
@@ -66,6 +73,8 @@ class Lexer:
             token = next(self.token_iterator)
             while token['class'] == "Ignorar":
                 token = next(self.token_iterator)
+            if token['class'] == 'id' and token not in self.symbol_table:
+                self.symbol_table.append(token)
             return token
         except StopIteration:
             return None
@@ -100,6 +109,9 @@ class Lexer:
         except KeyError:
             class_name, type_name = ("ERRO", "Nulo")
         return {'class': class_name, 'lexeme': lexeme, 'type': type_name}
+    
+    def print_token(self, token: Token):
+        print(f"Classe: {token['class']}, Lexema: {token['lexeme']}, Tipo: {token['type']}")
     
     def buffer_is_empty(self):
         return self.buffer == ""
