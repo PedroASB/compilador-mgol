@@ -1,39 +1,41 @@
 from io import TextIOWrapper
-from typing import TypeAlias
 from collections.abc import Iterator
 from analisador.lexico.DFA import DFA
 from analisador.lexico.DFAState import DFAState
-from analisador.lexico.consts import state_token_type_map
-
-Token: TypeAlias = dict[str, str]
+from analisador.lexico.consts import state_token_type_map, reserved_words
+from analisador.lexico.DFAReader import DFAReader
+from analisador.lexico.types import Token
+from analisador.lexico.SymbolTable import SymbolTable
 
 class Lexer:
     _NEW_LINE_ = '\n'
     _EOF_ = ''
     _INVALID_ = DFAState('invalid')
 
-    def __init__(self, input_reader: TextIOWrapper, dfa: DFA, reserved_words: set[str]):
-        self.dfa = dfa
-        self.reserved_words = reserved_words
+    def __init__(self, source_file: str, symbol_table: SymbolTable):
+        self.dfa = DFAReader(open(r"./analisador/lexico/automaton.dfa", 'r', encoding='utf-8')).read()
         self.line = 1
         self.column = 1
         self.buffer = ""
         self.current_symbol = None
-        self.input_reader = input_reader
+        self.input_reader = open(source_file, 'r', encoding="utf-8")
         self.is_finished = False
-        self.symbol_table: list[Token] = []
+        self.symbol_table = symbol_table
         self.errors: list[str] = []
         self.initialize_symbol_table()
-
         self.input_reader.seek(0)
         self.load_next_symbol_and_increment_column()
         self.token_iterator = self.get_token_iterator()
 
+    def __del__(self):
+        if self.input_reader:
+            self.input_reader.close()
+
     def initialize_symbol_table(self):
-        for reserved_word in self.reserved_words:
-            self.symbol_table.append({'class': reserved_word, 
-                                      'lexeme': reserved_word, 
-                                      'type': reserved_word})
+        for reserved_word in reserved_words:
+            self.symbol_table.insert_token({'class': reserved_word, 
+                                            'lexeme': reserved_word, 
+                                            'type': reserved_word})
 
     def load_next_symbol_and_increment_column(self):
         self.increment_column()
@@ -55,8 +57,10 @@ class Lexer:
                         self.finish()
                 self.load_next_symbol_and_increment_column()
             else:
-                if not self.buffer_is_empty():
-                    yield self.get_and_classify_current_token()
+                if self.is_in_initial_state():
+                    self.append_current_symbol_to_buffer()
+
+                yield self.get_and_classify_current_token()
                 
                 if self.is_in_initial_state() or \
                     self.is_in_incomplete_comment_state() or \
@@ -64,6 +68,9 @@ class Lexer:
 
                     self.handle_error()
                     self.load_next_symbol_and_increment_column()
+                
+                elif self.is_in_non_accept_state():
+                    self.handle_error()
 
                 self.go_to_initial_state()
                 self.reset_buffer()
@@ -73,8 +80,8 @@ class Lexer:
             token = next(self.token_iterator)
             while token['class'] == "Ignorar":
                 token = next(self.token_iterator)
-            if token['class'] == 'id' and token not in self.symbol_table:
-                self.symbol_table.append(token)
+            if token['class'] == 'id' and not self.symbol_table.has_token(token):
+                self.symbol_table.insert_token(token)
             return token
         except StopIteration:
             return None
@@ -86,23 +93,26 @@ class Lexer:
         return f"Linha: {self.line}, Coluna: {self.column}"
 
     def handle_error(self):
-        if self.current_symbol not in self.dfa.alphabet:
+        if self.current_symbol not in self.dfa.alphabet and self.is_in_initial_state():
             error_message = "Caractere não pertence ao alfabeto da linguagem"
-        if self.is_in_initial_state():
-            error_message = "Caractere não esperado"
-        if self.is_in_incomplete_comment_state():
+        elif self.is_in_incomplete_comment_state():
             error_message = "Comentário não finalizado"
-        if self.is_in_incomplete_literal_state():
+        elif self.is_in_incomplete_literal_state():
             error_message = "Literal não finalizado"
-            
-        self.errors.append('ERRO LÉXICO - ' + error_message + ' - ' + self.get_formatted_line_and_column())
+        elif self.is_in_initial_state() or self.is_in_non_accept_state():
+            error_message = "Caractere não esperado"
+        
+        error = 'ERRO LÉXICO - ' + error_message + ' - ' + self.get_formatted_line_and_column()
+        self.errors.append(error)
+        print('ERRO LÉXICO - ' + self.get_formatted_line_and_column())
+        print(error_message + '.\n')
 
     def get_and_classify_current_token(self) -> Token:
         lexeme = self.buffer
         current_state = self.dfa.current_state
         try:
             class_name, type_name = state_token_type_map[current_state.name]
-            if class_name == "id" and lexeme in self.reserved_words:
+            if class_name == "id" and lexeme in reserved_words:
                 class_name, type_name = lexeme, lexeme
             elif class_name == "EOF":
                 lexeme = "EOF"
@@ -130,6 +140,9 @@ class Lexer:
 
     def is_in_initial_state(self):
         return self.dfa.is_in_initial_state()
+    
+    def is_in_non_accept_state(self):
+        return self.dfa.current_state not in self.dfa.accept_states
     
     def is_in_incomplete_comment_state(self):
         return self.dfa.current_state == DFAState('COMMENT_1')

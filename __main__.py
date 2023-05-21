@@ -1,28 +1,20 @@
 from analisador.lexico.Lexer import Lexer
-from analisador.lexico.DFAReader import DFAReader
+from analisador.lexico.SymbolTable import SymbolTable
 
 if __name__ == '__main__':
-    source_code_file = r"./source.mgol"
-    dfa = DFAReader(open(r"./analisador/lexico/automaton.dfa", 'r', encoding='utf-8')).read()
-    reserved_words = {"inicio", "varinicio", "varfim", "escreva", 
-                      "leia", "se", "entao", "fimse", "repita", "fimrepita", "fim", "inteiro", "literal", "real"}
-    mgol_lexer = Lexer(open(source_code_file, 'r', encoding="utf-8"), dfa, reserved_words)
-    
+    source_code_name = r"./source.mgol"
+    symbol_table = SymbolTable()
+    mgol_lexer = Lexer(source_code_name, symbol_table)
+
     print('=' * 40 + '\nSCANNER\n' + '=' * 40)
 
     while True:
         token = mgol_lexer.scanner()
         if token:
-            if token['class'] == "ERRO":
-                print("ERRO")
-            else:        
-                mgol_lexer.print_token(token)
+            mgol_lexer.print_token(token)
         else:
             break
     
-    # print('Lista de Erros:')
-    # print(mgol_lexer.errors)
-
-    print('=' * 40 + '\nTABELA DE SÍMBOLOS\n' + '=' * 40)
-    for token in mgol_lexer.symbol_table:
-        mgol_lexer.print_token(token)
+    # print('=' * 40 + '\nTABELA DE SÍMBOLOS\n' + '=' * 40)
+    # for token in mgol_lexer.symbol_table.table:
+    #     mgol_lexer.print_token(token)

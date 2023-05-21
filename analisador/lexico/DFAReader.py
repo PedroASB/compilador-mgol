@@ -12,6 +12,10 @@ class DFAReader:
         self.transitions = []
         self.file = file
 
+    def __del__(self):
+        if self.file:
+            self.file.close()
+
     def read_states(self):
         while (line := self.file.readline().strip()) != "":
             self.states.append(DFAState(line))

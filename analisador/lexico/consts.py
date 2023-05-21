@@ -92,3 +92,5 @@ state_token_type_map = {
         "TAB": ("Ignorar", "Nulo"),
     }
 
+reserved_words = {"inicio", "varinicio", "varfim", "escreva", "leia", "se", "entao", "fimse", "repita", "fimrepita", "fim", "inteiro", "literal", "real"}
+
