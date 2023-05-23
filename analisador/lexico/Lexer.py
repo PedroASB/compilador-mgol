@@ -1,6 +1,5 @@
-from io import TextIOWrapper
 from collections.abc import Iterator
-from analisador.lexico.DFA import DFA
+from io import TextIOWrapper
 from analisador.lexico.DFAState import DFAState
 from analisador.lexico.consts import state_token_type_map, reserved_words
 from analisador.lexico.DFAReader import DFAReader
@@ -12,13 +11,13 @@ class Lexer:
     _EOF_ = ''
     _INVALID_ = DFAState('invalid')
 
-    def __init__(self, source_file: str, symbol_table: SymbolTable):
+    def __init__(self, source_file: TextIOWrapper, symbol_table: SymbolTable):
         self.dfa = DFAReader(open(r"./analisador/lexico/automaton.dfa", 'r', encoding='utf-8')).read()
         self.line = 1
         self.column = 1
         self.buffer = ""
         self.current_symbol = None
-        self.input_reader = open(source_file, 'r', encoding="utf-8")
+        self.input_reader = source_file
         self.is_finished = False
         self.symbol_table = symbol_table
         self.errors: list[str] = []
@@ -61,7 +60,7 @@ class Lexer:
                     self.append_current_symbol_to_buffer()
 
                 yield self.get_and_classify_current_token()
-                
+
                 if self.is_in_initial_state() or \
                     self.is_in_incomplete_comment_state() or \
                     self.is_in_incomplete_literal_state():
@@ -80,9 +79,12 @@ class Lexer:
             token = next(self.token_iterator)
             while token['class'] == "Ignorar":
                 token = next(self.token_iterator)
-            if token['class'] == 'id' and not self.symbol_table.has_token(token):
-                self.symbol_table.insert_token(token)
-            return token
+            if token['class'] == 'id':
+                if not self.symbol_table.has_token(token):
+                    self.symbol_table.insert_token(token)
+                return self.symbol_table.get_token(token['lexeme'])
+            else:
+                return token
         except StopIteration:
             return None
 
@@ -104,8 +106,11 @@ class Lexer:
         
         error = 'ERRO LÉXICO - ' + error_message + ' - ' + self.get_formatted_line_and_column()
         self.errors.append(error)
-        print('ERRO LÉXICO - ' + self.get_formatted_line_and_column())
-        print(error_message + '.\n')
+        print('\033[31m-\033[m' * 80)
+        print("{:^85}".format('\033[31mERRO LÉXICO - ' + self.get_formatted_line_and_column()))
+        print("{:^90}".format('\033[1;31m' + error_message + '.\033[m'))
+        print('\033[31m-\033[m' * 80)
+
 
     def get_and_classify_current_token(self) -> Token:
         lexeme = self.buffer

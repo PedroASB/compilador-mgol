@@ -1,16 +1,17 @@
 from io import TextIOWrapper
+from analisador.lexico.types import TransitionsList
 from . import consts
 from .DFAState import DFAState
 from .DFA import DFA
 
 class DFAReader:
-    def __init__(self, file: TextIOWrapper):
+    def __init__(self, file_: TextIOWrapper):
         self.states: list[DFAState] = []
         self.alphabet: list[str] = []
         self.initial_state: DFAState = DFAState('None')
         self.accept_states: list[DFAState] = []
-        self.transitions = []
-        self.file = file
+        self.transitions: TransitionsList = []
+        self.file = file_
 
     def __del__(self):
         if self.file:
@@ -64,25 +65,4 @@ class DFAReader:
 
         return DFA(self.alphabet, self.states, self.initial_state, 
                    self.accept_states, self.transitions)
-
-
-if __name__ == '__main__':
-    file_name = r"D:\Repositórios\compilador-mgol\analisador\lexico\automata.dfa"
-    with open(file_name, 'r', encoding="utf8") as file:
-        try:
-            dfa: DFA = DFAReader(file).read()
-        except KeyError as e:
-            print("Error: ", e)
-        # print('Alfabeto: ', end='')
-        # print(dfa.alphabet)
-        # print('\nInicial: ' + dfa.initial_state.name)
-        # print('\nEstados:')
-        # for state in dfa.states:
-        #     print(state.name)
-        # print('\nEstados de aceitação:')
-        # for state in dfa.accept_states:
-        #     print(state.name)
-        # print('\nTransições:')
-        # for state_from, symbol, state_for in dfa.transitions:
-        #     print(state_from.name, symbol, state_for.name)
 

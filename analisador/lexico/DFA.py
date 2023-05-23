@@ -1,7 +1,5 @@
-from typing import TypeAlias
+from analisador.lexico.types import TransitionsList
 from .DFAState import DFAState
-
-TransitionsList: TypeAlias = list[tuple[DFAState, str | set[str], DFAState]]
 
 class DFA:
     
@@ -60,7 +58,6 @@ class DFA:
     
     @staticmethod
     def process_transitions(transitions: TransitionsList):
-        # Expands transitions on 'set of symbols'
         processed_transitions: TransitionsList = []
         for transition in transitions:
             transition_symbol_or_symbols = transition[1]
@@ -76,32 +73,6 @@ class DFA:
     def validate(self):
         for state in self.states:
             assert state.name != 'invalid', "Um estado criado por usuário não pode ser nomeado 'invalid'"
-
         for transition in self.transitions:
             transition_state_from, transition_symbol, transition_state_to = transition
             assert transition_state_from in self.states and transition_state_to in self.states, "A transição contém um estado que não pertence ao conjunto de estados do DFA: " + transition_state_from.name + ' : "' + transition_symbol + '" -> ' + transition_state_to.name
-
-    def compile_to_zuzak_fsm_simulator(self):
-        output = ""
-        output += "#states\n"
-        for state in self.states:
-            output += f"{state.name}\n"
-        output += "#initial\n"
-        output += f"{self.initial_state.name}\n"
-        output += "#accepting\n"
-        for state in self.accept_states:
-            output += f"{state.name}\n"
-        output += "#alphabet\n"
-        for symbol in self.alphabet:
-            symbol = symbol if symbol != '\n' else '¬'
-            output += f"{symbol}\n"
-        output += "#transitions\n"
-        for transition in self.transitions:
-            symb = transition[1] if transition[1] != '\n' else '¬'
-            output += f"{transition[0].name}:{symb}>{transition[2].name}\n"
-        return output
-
-
-
-
-
