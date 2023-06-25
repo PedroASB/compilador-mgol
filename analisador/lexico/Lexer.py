@@ -3,7 +3,7 @@ from io import TextIOWrapper
 from analisador.lexico.DFAState import DFAState
 from analisador.lexico.consts import state_token_type_map, reserved_words
 from analisador.lexico.DFAReader import DFAReader
-from analisador.lexico.types import Token
+from analisador.lexico.Token import Token
 from analisador.lexico.SymbolTable import SymbolTable
 
 class Lexer:
@@ -32,9 +32,7 @@ class Lexer:
 
     def initialize_symbol_table(self):
         for reserved_word in reserved_words:
-            self.symbol_table.insert_token({'class': reserved_word, 
-                                            'lexeme': reserved_word, 
-                                            'type': reserved_word})
+            self.symbol_table.insert_token(Token(reserved_word, reserved_word, reserved_word, -1, -1))
 
     def load_next_symbol_and_increment_column(self):
         self.increment_column()
@@ -77,12 +75,12 @@ class Lexer:
     def scanner(self) -> Token | None:
         try:
             token = next(self.token_iterator)
-            while token['class'] in {"Ignorar", "Comentário"}:
+            while token.class_name in {"Ignorar", "Comentário"}:
                 token = next(self.token_iterator)
-            if token['class'] == 'id':
+            if token.class_name == 'ID':
                 if not self.symbol_table.has_token(token):
                     self.symbol_table.insert_token(token)
-                return self.symbol_table.get_token(token['lexeme'])
+                return self.symbol_table.get_token(token.lexeme)
             else:
                 return token
         except StopIteration:
@@ -117,16 +115,16 @@ class Lexer:
         current_state = self.dfa.current_state
         try:
             class_name, type_name = state_token_type_map[current_state.name]
-            if class_name == "id" and lexeme in reserved_words:
+            if class_name == "ID" and lexeme in reserved_words:
                 class_name, type_name = lexeme, lexeme
             elif class_name == "EOF":
                 lexeme = "EOF"
         except KeyError:
             class_name, type_name = ("ERRO", "Nulo")
-        return {'class': class_name, 'lexeme': lexeme, 'type': type_name}
+        return Token(lexeme, class_name, type_name, self.line, self.column)
     
     def print_token(self, token: Token):
-        print(f"Classe: {token['class']}, Lexema: {token['lexeme']}, Tipo: {token['type']}")
+        print(f"Classe: {token.class_name}, Lexema: {token.lexeme}, Tipo: {token.type_name}")
     
     def buffer_is_empty(self):
         return self.buffer == ""
