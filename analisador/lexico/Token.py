@@ -6,5 +6,9 @@ class Token:
         self.line = line
         self.column = column
     
+    @staticmethod
+    def tokenify(lexeme):
+        return Token(lexeme, lexeme, lexeme, -1, -1)
+    
     def get_formatted_line_and_column(self):
         return f"Linha: {self.line}, Coluna: {self.column}"
