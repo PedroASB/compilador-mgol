@@ -10,8 +10,8 @@ class Parser:
         self.lexer: Lexer = lexer
         self.productions = productions
         self.tokens_queue = []
-        self.action_table = ActionTable(r".\analisador\sintatico\tables\action.csv")
-        self.goto_table = GotoTable(r".\analisador\sintatico\tables\goto.csv")
+        self.action_table = ActionTable(r"./analisador/sintatico/tables/action.csv")
+        self.goto_table = GotoTable(r"./analisador/sintatico/tables/goto.csv")
 
     def get_next_token(self):
         return self.lexer.scanner() if len(self.tokens_queue) == 0 else self.tokens_queue.pop(0)
@@ -33,38 +33,24 @@ class Parser:
                     stack.pop(production.cardinality)
                     goto_state = self.goto_table.get_goto(stack.get(), production.left)
                     stack.push(goto_state)
-                    print(production.left, '->', production.right)
+                    print(production.left, '->', ' '.join(production.right))
                     current_state = stack.get()
                 case ('a', _):
                     return not error_flag
-                case ('e', error_code):
+                case ('e', _):
                     error_flag = True
-                    match error_code:
-                        case 0:
-                            print(f"{current_token.get_formatted_line_and_column()} ERRO! | Estado {current_state} | Esperado: {', '.join(self.get_expected_tokens_at_state(current_state))} | Recebido: {current_token.class_name}")
-                            return False
-                        case 1:
-                            print(current_token.get_formatted_line_and_column(),"ERRO! | Estado", current_state, '| Esperado: inicio | Recebido: ', current_token)
-                            self.tokens_queue.extend([Token.tokenify("varinicio"), current_token])
-                            current_token = self.get_next_token()
-                        case 2:
-                            print(f"{current_token.get_formatted_line_and_column()} ERRO! | Estado {current_state} | Esperado: {', '.join(self.get_expected_tokens_at_state(current_state))} | Recebido: {current_token.class_name}")
-                            
-                            if not self.recover_from_wrong_token(current_state, [Token.tokenify(tkn) for tkn in self.get_expected_tokens_at_state(current_state)], stack):
-                                print("Não foi possível aplicar REC_WRG_TKN")
-                                if not self.recover_from_excessive_token(current_state):
-                                    print("Não foi possível aplicar REC_EXC_TKN")
-                                    if not self.recover_from_missing_token(current_state, [Token.tokenify(tkn) for tkn in self.get_expected_tokens_at_state(current_state)], current_token, stack):
-                                        print("Não foi possível aplicar REC_MSN_TKN")
-                                        if not self.recover_panic(current_state):
-                                            print("Não foi possível aplicar PANIC")
-                                            return False
-                            current_token = self.get_next_token()
-                            current_state = stack.get()
-                        case 201:
-                            print(current_token.get_formatted_line_and_column(), "Esperando identificador | Recebido ';' | Ação: Ignorar ',' | Estado:", stack.get())
-                            stack.pop()
-                            current_state = stack.get()
+                    print(f"{current_token.get_formatted_line_and_column()} ERRO! | Estado {current_state} | Esperado: {', '.join(self.get_expected_tokens_at_state(current_state))} | Recebido: {current_token.class_name}")
+                    if not self.recover_from_wrong_token(current_state, [Token.tokenify(tkn) for tkn in self.get_expected_tokens_at_state(current_state)], stack):
+                        print("Não foi possível aplicar REC_WRG_TKN")
+                        if not self.recover_from_excessive_token(current_state):
+                            print("Não foi possível aplicar REC_EXC_TKN")
+                            if not self.recover_from_missing_token(current_state, [Token.tokenify(tkn) for tkn in self.get_expected_tokens_at_state(current_state)], current_token, stack):
+                                print("Não foi possível aplicar REC_MSN_TKN")
+                                if not self.recover_panic(current_state):
+                                    print("Não foi possível aplicar PANIC")
+                                    return False
+                    current_token = self.get_next_token()
+                    current_state = stack.get()
     
     def get_expected_tokens_at_state(self, state: int):
         return [action[0] for action in self.action_table.get_actions_for_state(state) if action[1][0] != 'e']
@@ -97,6 +83,8 @@ class Parser:
     def recover_from_wrong_token(self, current_state, possible_tokens, stack):
         print("APLICANDO REC_WRG_TKN")
         next_token = self.get_next_token()
+        if next_token is None:
+            return False
         if possible_token := self.any_of_possible_tokens_fits_next_token(current_state, possible_tokens, next_token, stack):
             self.tokens_queue = [possible_token, next_token, *self.tokens_queue]
             return True
@@ -107,6 +95,8 @@ class Parser:
     def recover_from_excessive_token(self, current_state):
         print("APLICANDO EXC_TKN")
         next_token = self.get_next_token()
+        if next_token is None:
+            return False
         self.tokens_queue = [next_token, *self.tokens_queue]
         return self.token_fits_state(next_token, current_state)
 
@@ -126,24 +116,26 @@ class Parser:
         return True
 
     def possible_token_fits_next_token(self, current_state: int, possible_token: Token, next_token: Token, stack: ParserStack):
-        action_given_possible_token = self.action_table.get_action(current_state, possible_token.class_name)
         new_state_on_possible_token = None
-        match action_given_possible_token:
-            case ('s', next_state):
-                new_state_on_possible_token = next_state
-            case ('r', reduce_production):
-                production = self.productions[reduce_production]
-                intermediate_state = self.goto_table.get_goto(stack.stack[-production.cardinality-1], production.left) # Simula a exclusão de |production| estados da pilha e pega o que ficar no topo 
-                # TODO: Analisar isso mais profundamente
-                match self.action_table.get_action(intermediate_state, possible_token.class_name):
-                    case ('s', state):
-                        new_state_on_possible_token = state
-                    case ('r', state):
-                        raise 'Erro não esperado! :: Reduções subsequentes sobre um mesmo token: isso jamais deveria acontecer'
-                    case _:
-                        return False
-            case ('e', _):
+        last_simulated_state = None
+        current_simulated_state = current_state
+        while True:
+            if current_simulated_state == last_simulated_state:
+                # Loop detectado
                 return False
+            action_given_possible_token = self.action_table.get_action(current_simulated_state, possible_token.class_name)
+            match action_given_possible_token:
+                case ('s', next_state):
+                    new_state_on_possible_token = next_state
+                    break
+                case ('r', reduce_production):
+                    production = self.productions[reduce_production]
+                    last_simulated_state = current_simulated_state
+                    current_simulated_state = self.goto_table.get_goto(stack.stack[-production.cardinality-1], production.left) # Simula a exclusão de |production| estados da pilha e pega o que ficar no topo 
+                case ('a', _):
+                    return True
+                case ('e', _):
+                    return False
         action_on_next_token = self.action_table.get_action(new_state_on_possible_token, next_token.class_name)
         match action_on_next_token:
             case ('s', _) | ('r', _):
