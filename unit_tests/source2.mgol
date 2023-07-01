@@ -1,0 +1,16 @@
+{TOKENS EM EXCESSO}
+inicio
+   varinicio
+        literal A;
+        inteiro B, D,, E; {',' EM EXCESSO}
+        real C;
+    varfim;
+    escreva "Digite B:";
+    leia A A; {'A' EM EXCESSO}
+    escreva "Digite A:";
+    leia A;
+    C <- B ++ 2; {'+' EM EXCESSO}
+    escreva C;
+    escreva A;
+    B <- E * 5;; {';' EM EXCESSO}
+fim

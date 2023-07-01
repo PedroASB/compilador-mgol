@@ -75,7 +75,7 @@ class Lexer:
     def scanner(self) -> Token | None:
         try:
             token = next(self.token_iterator)
-            while token.class_name in {"Ignorar", "Comentário"}:
+            while token.class_name in {"Ignorar", "Comentário", "ERRO"}:
                 token = next(self.token_iterator)
             if token.class_name == 'ID':
                 if not self.symbol_table.has_token(token):

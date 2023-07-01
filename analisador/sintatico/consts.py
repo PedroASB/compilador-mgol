@@ -26,7 +26,7 @@ productions = [
     Production("OPRD", [ "num" ]),
     Production("A", [ "COND",  "A" ]),
     Production("COND", [ "CAB",  "CP" ]),
-    Production("CAB", [ "se",  "ab_p", "EXP_R", "fc_p", "então" ]),
+    Production("CAB", [ "se",  "ab_p", "EXP_R", "fc_p", "entao" ]),
     Production("EXP_R", [ "OPRD",  "opr", "OPRD" ]),
     Production("CP", [ "ES",  "CP" ]),
     Production("CP", [ "CMD",  "CP" ]),

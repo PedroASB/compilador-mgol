@@ -39,15 +39,16 @@ class Parser:
                     return not error_flag
                 case ('e', _):
                     error_flag = True
-                    print(f"{current_token.get_formatted_line_and_column()} ERRO! | Estado {current_state} | Esperado: {', '.join(self.get_expected_tokens_at_state(current_state))} | Recebido: {current_token.class_name}")
-                    if not self.recover_from_wrong_token(current_state, [Token.tokenify(tkn) for tkn in self.get_expected_tokens_at_state(current_state)], stack):
-                        print("Não foi possível aplicar REC_WRG_TKN")
+                    possible_tokens = [Token.tokenify(tkn) for tkn in self.get_expected_tokens_at_state(current_state)]
+                    self.print_error_message(current_state, current_token, possible_tokens)
+                    if not self.recover_from_wrong_token(current_state, possible_tokens, stack):
+                        print("\033[31mNão foi possível aplicar REC_WRG_TKN\033[m")
                         if not self.recover_from_excessive_token(current_state):
-                            print("Não foi possível aplicar REC_EXC_TKN")
-                            if not self.recover_from_missing_token(current_state, [Token.tokenify(tkn) for tkn in self.get_expected_tokens_at_state(current_state)], current_token, stack):
-                                print("Não foi possível aplicar REC_MSN_TKN")
+                            print("\033[31mNão foi possível aplicar REC_EXC_TKN\033[m")
+                            if not self.recover_from_missing_token(current_state, possible_tokens, current_token, stack):
+                                print("\033[31mNão foi possível aplicar REC_MSN_TKN\033[m")
                                 if not self.recover_panic(current_state):
-                                    print("Não foi possível aplicar PANIC")
+                                    print("\033[31mNão foi possível aplicar PANIC\033[m")
                                     return False
                     current_token = self.get_next_token()
                     current_state = stack.get()
@@ -62,10 +63,10 @@ class Parser:
         return read_token is not None
     
     def recover_panic(self, current_state):
-        print("APLICANDO PANIC")
+        print("\033[36mAPLICANDO PANIC\033[m")
         read_token = None
         while read_token := self.get_next_token():
-            print(f"CONSUMIDO: {read_token.class_name}")
+            print(f"\033[36mCONSUMIDO: {read_token.class_name}\033[m")
             if not read_token:
                 return False
             if self.token_fits_state(read_token, current_state):
@@ -81,7 +82,7 @@ class Parser:
                 return False
             
     def recover_from_wrong_token(self, current_state, possible_tokens, stack):
-        print("APLICANDO REC_WRG_TKN")
+        print("\033[36mAPLICANDO REC_WRG_TKN\033[m")
         next_token = self.get_next_token()
         if next_token is None:
             return False
@@ -93,7 +94,7 @@ class Parser:
 
             
     def recover_from_excessive_token(self, current_state):
-        print("APLICANDO EXC_TKN")
+        print("\033[36mAPLICANDO EXC_TKN\033[m")
         next_token = self.get_next_token()
         if next_token is None:
             return False
@@ -101,7 +102,7 @@ class Parser:
         return self.token_fits_state(next_token, current_state)
 
     def recover_from_missing_token(self, current_state, possible_missing_tokens, current_token: Token, stack: ParserStack):
-        print("APLICANDO MSN_TKN")
+        print("\033[36mAPLICANDO MSN_TKN\033[m")
         # Estratégia: se só existe um token possível, insira-o sem qualquer verificação e prossiga com a análise.
         # Se existem múltiplos tokens, teste se a inserção de algum deles faz sentido considerando o token subsequente.
         # Se essa inserção fizer sentido, realize a inserção e prossiga a análise.
@@ -148,3 +149,11 @@ class Parser:
             if self.possible_token_fits_next_token(current_state, possible_token, next_token, stack):
                 return possible_token
         return None
+    
+    def print_error_message(self, current_state, current_token: Token, possible_tokens: list[Token]):
+        print(f'\033[1;31mErro Sintático - {self.lexer.get_formatted_line_and_column()}\033[m')
+        print('\033[31mEstado Atual:', current_state)
+        print('Esperado: ', end='')
+        for tkn in possible_tokens:
+            print(tkn.class_name, end=' ')
+        print(f'\nRecebido: {current_token.class_name}\033[m')
