@@ -9,7 +9,7 @@ from analisador.sintatico.Production import Production
 def get_file():
     try:
         # MUDAR AQUI!!!
-        source_code_name = sys.argv[1]
+        source_code_name =  sys.argv[1]
         file_ = open(source_code_name, 'r', encoding="utf-8")
     except IndexError:
         print("Erro em __main__: Quantidade de argumentos incorreta.")
@@ -26,7 +26,7 @@ symbol_table = SymbolTable()
 mgol_lexer = Lexer(file_, symbol_table)
 mgol_parser = Parser(mgol_lexer)
 
-print('='*40)
-print(f"{'PARSER':^40}")
-print('='*40)
-print(mgol_parser.parse())
+print('\033[1m='*90)
+print(f"{'PARSER':^90}")
+print('\033[1m=\033[m'*90)
+mgol_parser.parse()

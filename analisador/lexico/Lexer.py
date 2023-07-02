@@ -104,10 +104,10 @@ class Lexer:
         
         error = 'ERRO LÉXICO - ' + error_message + ' - ' + self.get_formatted_line_and_column()
         self.errors.append(error)
-        print('\033[31m-\033[m' * 80)
-        print("{:^85}".format('\033[31mERRO LÉXICO - ' + self.get_formatted_line_and_column()))
-        print("{:^90}".format('\033[1;31m' + error_message + '.\033[m'))
-        print('\033[31m-\033[m' * 80)
+        print('\033[31m-\033[m' * 90)
+        print("{:^100}".format('\033[31mERRO LÉXICO - ' + self.get_formatted_line_and_column()))
+        print("{:^100}".format('\033[1;31m' + error_message + '.\033[m'))
+        print('\033[31m-\033[m' * 90)
 
 
     def get_and_classify_current_token(self) -> Token:
