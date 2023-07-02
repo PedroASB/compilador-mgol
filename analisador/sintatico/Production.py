@@ -3,3 +3,6 @@ class Production:
         self.left = left
         self.right = right
         self.cardinality = len(right)
+    
+    def __str__(self) -> str:
+        return ' '*(40-len(self.left)) + self.left + ' -> ' + ' '.join(self.right)
