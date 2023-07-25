@@ -1,4 +1,4 @@
-class ParserStack:
+class SemanticStack:
     def __init__(self):
         self.stack = [0]
     

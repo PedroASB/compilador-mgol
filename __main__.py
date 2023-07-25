@@ -1,6 +1,7 @@
 import sys
 from analisador.lexico.Lexer import Lexer
 from analisador.lexico.SymbolTable import SymbolTable
+from analisador.semantico.ObjectFileManager import ObjectFileManager
 from analisador.sintatico.ActionTable import ActionTable
 from analisador.sintatico.GotoTable import GotoTable
 from analisador.sintatico.Parser import Parser
@@ -22,10 +23,12 @@ def get_file():
 
 file_ = get_file()
 symbol_table = SymbolTable()
+obj_file_manager = ObjectFileManager()
 mgol_lexer = Lexer(file_, symbol_table)
-mgol_parser = Parser(mgol_lexer)
+mgol_parser = Parser(mgol_lexer, obj_file_manager)
 
 print('\033[1m='*90)
 print(f"{'PARSER':^90}")
 print('\033[1m=\033[m'*90)
-mgol_parser.parse()
+if mgol_parser.parse():
+    obj_file_manager.generate_final()

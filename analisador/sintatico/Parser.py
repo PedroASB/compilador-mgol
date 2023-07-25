@@ -3,11 +3,14 @@ from analisador.lexico.Token import Token
 from analisador.sintatico.GotoTable import GotoTable
 from analisador.sintatico.ActionTable import ActionTable
 from analisador.sintatico.ParserStack import ParserStack
+from analisador.semantico.ObjectFileManager import ObjectFileManager
+from analisador.semantico.SemanticRulesInvoker import SemanticRulesInvoker
 from analisador.sintatico.consts import productions
 
 class Parser:
-    def __init__(self, lexer: Lexer):
+    def __init__(self, lexer: Lexer, obj_file_manager: ObjectFileManager):
         self.lexer: Lexer = lexer
+        self.semantic_rules_invoker = SemanticRulesInvoker(self.lexer.symbol_table, obj_file_manager)
         self.productions = productions
         self.tokens_queue = []
         self.action_table = ActionTable(r"./analisador/sintatico/tables/action.csv")
@@ -33,7 +36,8 @@ class Parser:
                     stack.pop(production.cardinality)
                     goto_state = self.goto_table.get_goto(stack.get(), production.left)
                     stack.push(goto_state)
-                    print(production.left, '->', ' '.join(production.right))
+                    print(reduce_production, production)
+                    self.semantic_rules_invoker.invoke_rule(reduce_production)
                     current_state = stack.get()
                 case ('a', _):
                     return not error_flag
@@ -110,6 +114,7 @@ class Parser:
         current_simulated_state = current_state
         while True:
             if current_simulated_state == last_simulated_state:
+                # Loop detectado
                 return False
             action_given_possible_token = self.action_table.get_action(current_simulated_state, possible_token.class_name)
             match action_given_possible_token:
@@ -155,3 +160,4 @@ class Parser:
             case None:
                 print("{:^100}".format("\033[1;31mNão foi possível recuperar o erro\033[m"))
         print('\033[1;31m◼\033[m' * 90)
+
