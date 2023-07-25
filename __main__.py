@@ -8,8 +8,7 @@ from analisador.sintatico.Production import Production
 
 def get_file():
     try:
-        # MUDAR AQUI!!!
-        source_code_name =  sys.argv[1]
+        source_code_name = sys.argv[1]
         file_ = open(source_code_name, 'r', encoding="utf-8")
     except IndexError:
         print("Erro em __main__: Quantidade de argumentos incorreta.")

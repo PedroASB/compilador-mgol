@@ -39,6 +39,7 @@ class Parser:
                     return not error_flag
                 case ('e', _):
                     error_flag = True
+                    error_line_and_column: str = self.lexer.get_formatted_line_and_column()
                     possible_tokens = [Token.tokenify(token) for token in self.get_expected_tokens_at_state(current_state)]
                     
                     recovery_method = None
@@ -52,7 +53,7 @@ class Parser:
                     elif self.recover_panic(current_state):
                         recovery_method = "panic"
 
-                    self.print_error_message(current_token, possible_tokens, recovery_method, recovery_token)
+                    self.print_error_message(current_token, possible_tokens, recovery_method, recovery_token, error_line_and_column)
                     if recovery_method is None:
                         return False
                     
@@ -109,7 +110,6 @@ class Parser:
         current_simulated_state = current_state
         while True:
             if current_simulated_state == last_simulated_state:
-                # Loop detectado
                 return False
             action_given_possible_token = self.action_table.get_action(current_simulated_state, possible_token.class_name)
             match action_given_possible_token:
@@ -137,9 +137,10 @@ class Parser:
                 return possible_token
         return None
     
-    def print_error_message(self, current_token: Token, possible_tokens: list[Token], recovery_method: str, recovery_token: Token):
+    def print_error_message(self, current_token: Token, possible_tokens: list[Token], 
+                            recovery_method: str, recovery_token: Token, formatted_line_and_column: str):
         print('\033[1;31m◼\033[m' * 90)
-        print("{:^100}".format('\033[31mERRO SINTÁTICO - ' + self.lexer.get_formatted_line_and_column() + '\033[m'))
+        print("{:^100}".format('\033[31mERRO SINTÁTICO - ' + formatted_line_and_column + '\033[m'))
         print("{:^100}".format('\033[31m' + 'Esperado: \033[3;31m' + ' '.join(token.class_name for token in possible_tokens) + '\033[m'))
         print("{:^100}".format('\033[31m' + 'Recebido: \033[3;31m' + current_token.class_name + '\033[m'))
         match recovery_method:
