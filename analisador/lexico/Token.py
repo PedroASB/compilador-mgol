@@ -12,3 +12,9 @@ class Token:
     
     def get_formatted_line_and_column(self):
         return f"Linha: {self.line}, Coluna: {self.column}"
+    
+    def __str__(self):
+        return f"Token(lexema={self.lexeme}, classe={self.class_name}, tipo={self.type_name})"
+    
+    def __repr__(self):
+        return f"Token(lexema={self.lexeme}, classe={self.class_name}, tipo={self.type_name})"

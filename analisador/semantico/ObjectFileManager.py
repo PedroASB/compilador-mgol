@@ -7,8 +7,8 @@ class ObjectFileManager:
         if self.temp_file:
             self.temp_file.close()
 
-    def print(self, line):
-        self.temp_file.writelines([line])
+    def print(self, line: str):
+        self.temp_file.write(line)
 
     def generate_final(self):
         if not self.temp_file:
@@ -20,6 +20,9 @@ class ObjectFileManager:
             file.write("\t/*----Variaveis temporarias----*/\n")
             # Chamar método para inserir as variáveis temporárias
             file.write("\t/*-----------------------------*/\n")
+            self.temp_file.seek(0)
             lines = self.temp_file.readlines()
+            for line in lines:
+                file.write('\t' + line)
             file.write("\treturn 0;\n")
             file.write("}")

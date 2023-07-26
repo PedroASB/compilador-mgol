@@ -4,13 +4,13 @@ from analisador.sintatico.GotoTable import GotoTable
 from analisador.sintatico.ActionTable import ActionTable
 from analisador.sintatico.ParserStack import ParserStack
 from analisador.semantico.ObjectFileManager import ObjectFileManager
-from analisador.semantico.SemanticRulesInvoker import SemanticRulesInvoker
+from analisador.semantico.SemanticRulesManager import SemanticRulesManager
 from analisador.sintatico.consts import productions
 
 class Parser:
     def __init__(self, lexer: Lexer, obj_file_manager: ObjectFileManager):
         self.lexer: Lexer = lexer
-        self.semantic_rules_invoker = SemanticRulesInvoker(self.lexer.symbol_table, obj_file_manager)
+        self.semantic_rules_manager = SemanticRulesManager(self.lexer.symbol_table, obj_file_manager)
         self.productions = productions
         self.tokens_queue = []
         self.action_table = ActionTable(r"./analisador/sintatico/tables/action.csv")
@@ -29,16 +29,19 @@ class Parser:
             match action:
                 case ('s', next_state):
                     stack.push(next_state)
+                    self.semantic_rules_manager.push_token(current_token)
                     current_token = self.get_next_token()
                     current_state = stack.get()
+                    # self.semantic_rules_manager.print_stack()
                 case ('r', reduce_production):
                     production = self.productions[reduce_production]
                     stack.pop(production.cardinality)
                     goto_state = self.goto_table.get_goto(stack.get(), production.left)
                     stack.push(goto_state)
-                    print(reduce_production, production)
-                    self.semantic_rules_invoker.invoke_rule(reduce_production)
+                    # print(reduce_production, production)
+                    self.semantic_rules_manager.invoke_rule(reduce_production)
                     current_state = stack.get()
+                    # self.semantic_rules_manager.print_stack()
                 case ('a', _):
                     return not error_flag
                 case ('e', _):

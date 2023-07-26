@@ -42,29 +42,6 @@ productions = [
     Production("A", [ "fim" ])
 ]
 
-# follow_sets = {
-#     "P'": {"EOF"},
-#     "P": {"EOF"},
-#     "V": {"leia", "escreva", "ID", "se", "repita", "fim"},
-#     "A": {"EOF"},
-#     "L": {"PT_V"},
-#     "LV": {"leia", "escreva", "ID", "se", "repita", "fim"},
-#     "D": {"inteiro", "real", "literal", "varfim"},
-#     "TIPO": {"ID"},
-#     "ES": {"leia", "escreva", "ID", "se", "repita", "fim", "fimse", "fimrepita"},
-#     "ARG": {"PT_V"},
-#     "CMD": {"leia", "escreva", "ID", "se", "repita", "fim", "fimse", "fimrepita"},
-#     "LD": {"PT_V"},
-#     "OPRD": {"PT_V", "OPM", "FC_P"},
-#     "COND": {"leia", "escreva", "ID", "se", "repita", "fim", "fimse", "fimrepita"},
-#     "CAB": {"leia", "escreva", "ID", "se", "fimse"},
-#     "CP": {"leia", "escreva", "ID", "se", "fimse",  "repita", "fimrepita", "fim"},
-#     "EXP_R": {"FC_P"},
-#     "R": {"leia", "escreva", "ID", "se", "repita", "fim"},
-#     "CABR": {"leia", "escreva", "ID", "se", "fimrepita"},
-#     "CPR": {"leia", "escreva", "ID", "se", "repita", "fim"}
-# }
-
 sync_tokens = {
     "P'": {"EOF"},
     "P": {"EOF"},
