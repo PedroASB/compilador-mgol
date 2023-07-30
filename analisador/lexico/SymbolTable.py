@@ -16,7 +16,7 @@ class SymbolTable:
     def has_token(self, token) -> bool:
         return token in self.table
 
-    def update_token(self, lexeme: str, type_name: str):
+    def update_token_type(self, lexeme: str, type_name: str):
         if token := self.get_token(lexeme):
             token.type_name = type_name
         else:

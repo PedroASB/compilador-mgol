@@ -19,6 +19,20 @@ class SemanticRulesManager:
     def push_token(self, token):
         self.semantic_stack.push(token)
 
+    def get_bottom_token(self) -> Token:
+        return self.semantic_stack.get(0)
+    
+    def set_id_type(self, lexeme: str, type_name: str):
+        self.symbol_table.update_token_type(lexeme, type_name)
+
+    def add_temporary_variable_to_object(self, name: str, type_name: str):
+        self.obj_file_manager.add_temporary_variable(name, type_name)
+    
+    def new_temporary_variable(self) -> str:
+        temporary_variable = 'T' + str(self.temporary_variable_counter)
+        self.temporary_variable_counter += 1
+        return temporary_variable
+
     def print_to_object(self, line):
         self.obj_file_manager.print(line)
 
@@ -40,28 +54,37 @@ class SemanticRulesManager:
                     self.print_to_object('\n')
 
             case 5:
-                '''(A) Amarração de atributos, organizar a passagem de valores do atributo
-                TIPO.tipo, para L.TIPO;'''
+                # D → TIPO L pt_v
+                # (A) Amarração de atributos, organizar a passagem de valores do atributo
+                # TIPO.tipo, para L.TIPO;
+                pass
+
 
             case 6:
-                '''(B) Amarração de atributos, organizar a passagem de valores do atributo.'''
+                # L → id vir L
+                # (B) Amarração de atributos, organizar a passagem de valores do atributo.e)
+                pass
             
             case 7:
-                '''C) Ajustar o preenchimento de id.tipo na tabela de símbolos:
-                Impressão do id no .obj'''
+                # L → id
+                # C) Ajustar o preenchimento de id.tipo na tabela de símbolos:
+                # Impressão do id no .obj
+                pass
 
             case 8:
                 inteiro = tokens['inteiro']
                 left_token.type_name = inteiro.type_name
+                self.print_to_object('int')
 
             case 9:
                 real = tokens['real']
                 left_token.type_name = real.type_name
-
+                self.print_to_object('double')
 
             case 10:
                 literal = tokens['literal']
                 left_token.type_name = literal.type_name
+                self.print_to_object('string')
 
             case 12:
                 id_ = tokens['id']
@@ -77,7 +100,7 @@ class SemanticRulesManager:
                         # de tratamento de erros
                         print("Erro: Variável não declarada!", id_.get_formatted_line_and_column())
 
-                # '''Verificar se o campo tipo do identificador está preenchido indicando a
+                # Verificar se o campo tipo do identificador está preenchido indicando a
                 # declaração do identificador (execução da regra semântica de número 6).
                 # Se sim, então:
                 #     Se id.tipo = literal Imprimir ( scanf(“%s”, id.lexema); )
@@ -85,7 +108,7 @@ class SemanticRulesManager:
                 #     Se id.tipo = real Imprimir ( scanf(“%lf”, &id.lexema); )
                 # Caso Contrário:
                 # Emitir na tela “Erro: Variável não declarada”, linha e coluna onde
-                # ocorreu o erro no fonte.'''
+                # ocorreu o erro no fonte.
             
             case 13:
                 # Gerar código para o comando escreva no arquivo objeto.
@@ -115,11 +138,15 @@ class SemanticRulesManager:
                 #     Emitir na tela “Erro: Variável não declarada” , linha e coluna onde ocorreu o erro no fonte.
                 
                 id_ = tokens['id']
-                if id_.type_name == 'Nulo': # Variável não declarada
-                    pass # Erro
-                left_token.lexeme = id_.lexeme
-                left_token.class_name = id_.class_name
-                left_token.type_name = id_.type_name
+                if id_.type_name != 'Nulo':
+                    left_token.lexeme = id_.lexeme
+                    left_token.class_name = id_.class_name
+                    left_token.type_name = id_.type_name
+                else:
+                    # TODO: Substituir por uma chamada a uma função mais genérica
+                    # de tratamento de erros
+                    print("Erro: Variável não declarada!", id_.get_formatted_line_and_column())
+                
                     
             
             case 18:
@@ -133,16 +160,17 @@ class SemanticRulesManager:
                 # Caso contrário emitir “Erro: Variável não declarada” ”, linha e coluna onde
                 # ocorreu o erro no fonte.
                 id_, atr, LD = tokens['id'], tokens['atr'], tokens['LD']
-                if id.type_name == 'Nulo':
+                if id.type_name != 'Nulo':
+                    if id_.type_name == LD.type_name:
+                        self.print_to_object(f'{id_.lexeme} {atr.type_name} {LD.lexeme};\n')
+                    else:
+                        # TODO: Substituir por uma chamada a uma função mais genérica
+                        # de tratamento de erros
+                        print("Erro: Atribuição com tipos diferentes!", id_.get_formatted_line_and_column())
+                else:
                     # TODO: Substituir por uma chamada a uma função mais genérica
                     # de tratamento de erros
                     print("Erro: Variável não declarada!", id_.get_formatted_line_and_column())
-                if id_.type_name != LD.type_name:
-                    # TODO: Substituir por uma chamada a uma função mais genérica
-                    # de tratamento de erros
-                    print("Erro: Atribuição com tipos diferentes!", id_.get_formatted_line_and_column())
-                self.print_to_object(f'{id_.lexeme} {atr.type_name} {LD.lexeme}\n')
-
             
             case 19:
                 # Verificar se tipo dos operandos de de LD são equivalentes e diferentes de literal.
@@ -152,17 +180,16 @@ class SemanticRulesManager:
                 #     Imprimir (Tx = OPRD.lexema opm.tipo OPRD.lexema) no arquivo objeto.
                 # Caso contrário emitir “Erro: Operandos com tipos incompatíveis” ”, linha e coluna onde ocorreu o erro no fonte.
 
-
-                OPRD, OPRD_1 = tokens["OPRD"], tokens["OPRD_1"]
-                if 'literal' in {OPRD.type, OPRD_1.type}:
+                OPRD, opm, OPRD_1 = tokens["OPRD"], tokens['opm'], tokens["OPRD_1"]
+                if OPRD.type_name == OPRD_1.type_name != 'literal':
+                    temporary_variable = self.new_temporary_variable()
+                    self.add_temporary_variable_to_object(temporary_variable, OPRD.type_name)
+                    left_token.lexeme = temporary_variable
+                    self.print_to_object(f'{temporary_variable} = {OPRD.lexeme} {opm.lexeme} {OPRD_1.lexeme};')
+                else:
                     # TODO: Substituir por uma chamada a uma função mais genérica
                     # de tratamento de erros
-                    print("Erro: Operação incompatível com operando(s) literal(is)!", id_.get_formatted_line_and_column())
-                if OPRD.type != OPRD_1.type:
-                    # TODO: Substituir por uma chamada a uma função mais genérica
-                    # de tratamento de erros
-                    print("Erro: Operandos com tipos incompatíveis entre si!", id_.get_formatted_line_and_column())
-                
+                    print("Erro: Operandos com tipos incompatíveis!", id_.get_formatted_line_and_column())       
             
             case 20:
                 # LD.atributos ← OPRD.atributos (Copiar todos os atributos de OPRD para os atributos de LD).
@@ -187,18 +214,18 @@ class SemanticRulesManager:
                     print("Erro: Variável não declarada!", id_.get_formatted_line_and_column())
             
             case 22:
-                # """OPRD.atributos ← num.atributos (Copiar todos os atributos de num para os atributos de OPRD)."""
+                # OPRD.atributos ← num.atributos (Copiar todos os atributos de num para os atributos de OPRD).
                 num = tokens['num']
                 left_token.lexeme = num.lexeme
                 left_token.class_name = num.class_name
                 left_token.type_name = num.type_name
             
             case 24:
-                # """Imprimir ( } ) no arquivo objeto."""
+                # Imprimir ( } ) no arquivo objeto.
                 self.print_to_object("}")
             
             case 25:
-                # """Imprimir ( if (EXP_R.lexema) { ) no arquivo objeto."""
+                # Imprimir ( if (EXP_R.lexema) { ) no arquivo objeto.
                 EXP_R = tokens['EXP_R']
                 self.print_to_object(f"if ({EXP_R.lexeme}) "+ "{")
             
@@ -208,49 +235,50 @@ class SemanticRulesManager:
                 OPRD_1 = tokens['OPRD_1']
 
                 if OPRD.type_name == OPRD_1.type_name:
-                    temporary_variable = 'T' + str(self.temporary_variable_counter)
-                    self.temporary_variable_counter += 1
+                    temporary_variable = self.new_temporary_variable()
                     left_token.lexeme = temporary_variable
-                    self.print_to_object(f"{temporary_variable} = {OPRD.lexeme} {opr.type_name} {OPRD_1.lexeme}")
+                    self.add_temporary_variable_to_object(temporary_variable, OPRD.type_name)
+                    self.print_to_object(f"{temporary_variable} = {OPRD.lexeme} {opr.type_name} {OPRD_1.lexeme};") # opr.lexeme?
                 else:
                     # TODO: Substituir por uma chamada a uma função mais genérica
                     # de tratamento de erros
                     print("Erro: Operandos com tipos incompatíveis!", id_.get_formatted_line_and_column())
                     
-                # """
+                #
                 # Verificar se os tipos de dados de OPRD são iguais ou equivalentes para a realização de comparação relacional.
                 # Se sim, então:
                 #     Gerar uma variável booleana temporária Tx, em que x é um número gerado sequencialmente.
                 #     EXP_R.lexema ← Tx
                 #     Imprimir (Tx = OPRD.lexema opr.tipo OPRD.lexema) no arquivo objeto.
                 # Caso contrário emitir “Erro: Operandos com tipos incompatíveis” ”, linha e coluna onde ocorreu o erro no fonte.
-                # """
+                #
 
             
             case 31:
-                # """(D) Verificar as necessidades e gerar as regras semânticas e de tradução."""
+                # (D) Verificar as necessidades e gerar as regras semânticas e de tradução.
                 pass
             
             case 32:
-                # """(E) Verificar as necessidades e gerar as regras semânticas e de tradução."""
+                # (E) Verificar as necessidades e gerar as regras semânticas e de tradução.
                 pass
             
             case 33:
-                # """(F) Verificar as necessidades e gerar as regras semânticas e de tradução."""
+                # (F) Verificar as necessidades e gerar as regras semânticas e de tradução.
                 pass
             
             case 34:
-                # """(G) Verificar as necessidades e gerar as regras semânticas e de tradução."""
+                # (G) Verificar as necessidades e gerar as regras semânticas e de tradução.
                 pass
             
             case 35:
-                # """(H) Verificar as necessidades e gerar as regras semânticas e de tradução."""
+                # (H) Verificar as necessidades e gerar as regras semânticas e de tradução.
                 pass
             
             case 36:
-                # """(I) Verificar as necessidades e gerar as regras semânticas e de tradução."""
+                # (I) Verificar as necessidades e gerar as regras semânticas e de tradução.
                 pass
             
             case 37:
-                # """(J) Verificar a necessidade de atualizar o que será utilizado em EXP_R para teste no repita; verificar a necessidade de gerar outras regras semânticas e de tradução além desta."""
+                # (J) Verificar a necessidade de atualizar o que será utilizado em EXP_R para teste no repita;
+                # verificar a necessidade de gerar outras regras semânticas e de tradução além desta.
                 pass

@@ -9,8 +9,12 @@ class SemanticStack:
         for _ in range(0, n):
             self.stack.pop()
     
-    def get(self) -> Token:
-        return self.stack[-1]
+    def get(self, n=1) -> Token:
+        try:
+            token = self.stack[-n]
+        except IndexError as e:
+            raise (f'Erro ao acessar stack[{-n}]') from e
+        return token
     
     def get_named_tokens(self, token_template: list[str]) -> dict[str, Token]:
         tokens = [self.get_then_pop() for _ in token_template]
