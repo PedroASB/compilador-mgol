@@ -38,7 +38,7 @@ class Parser:
                     stack.pop(production.cardinality)
                     goto_state = self.goto_table.get_goto(stack.get(), production.left)
                     stack.push(goto_state)
-                    # print(reduce_production, production)
+                    print(reduce_production, production)
                     self.semantic_rules_manager.invoke_rule(reduce_production)
                     current_state = stack.get()
                     # self.semantic_rules_manager.print_stack()

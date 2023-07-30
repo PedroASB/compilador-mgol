@@ -14,13 +14,13 @@ class SemanticRulesManager:
 
     def print_stack(self):
         for item in self.semantic_stack.stack:
-            print(item.class_name, item.lexeme, item.type_name)
+            print(f'Classe: {item.class_name}, Lexema: {item.lexeme}, Tipo: {item.type_name}')
 
     def push_token(self, token):
         self.semantic_stack.push(token)
 
-    def get_bottom_token(self) -> Token:
-        return self.semantic_stack.get(0)
+    def get_token(self, lexeme: str) -> Token:
+        return self.semantic_stack.get_token(lexeme)
     
     def set_id_type(self, lexeme: str, type_name: str):
         self.symbol_table.update_token_type(lexeme, type_name)
@@ -50,26 +50,36 @@ class SemanticRulesManager:
     def run_rule(self, production_index, tokens: dict[str, Token], left_token: Token):
         match production_index:
             case 4:
-                for _ in range(3):
-                    self.print_to_object('\n')
+                self.print_to_object('\n')
 
             case 5:
                 # D → TIPO L pt_v
                 # (A) Amarração de atributos, organizar a passagem de valores do atributo
                 # TIPO.tipo, para L.TIPO;
-                pass
-
+                self.print_to_object(';\n')
 
             case 6:
                 # L → id vir L
                 # (B) Amarração de atributos, organizar a passagem de valores do atributo.e)
-                pass
+                # TODO: Ajustar esta regra
+                id_, L = tokens['id'], tokens['L']
+                left_token.type_name = L.type_name
+                self.set_id_type(id_.lexeme, left_token.type_name)
+
+                # TODO: Corrigir a ordem das variáveis
+                self.print_to_object(f', {id_.lexeme}')
             
             case 7:
                 # L → id
                 # C) Ajustar o preenchimento de id.tipo na tabela de símbolos:
                 # Impressão do id no .obj
-                pass
+                # TODO: Ajustar esta regra
+                left_token.type_name = self.get_token('TIPO').type_name
+                id_ = tokens['id']
+                self.set_id_type(id_.lexeme, left_token.type_name)
+
+                # TODO: Corrigir a ordem das variáveis
+                self.print_to_object(f' {id_.lexeme}')
 
             case 8:
                 inteiro = tokens['inteiro']
@@ -113,11 +123,15 @@ class SemanticRulesManager:
             case 13:
                 # Gerar código para o comando escreva no arquivo objeto.
                 # Imprimir ( printf(“ARG.lexema”); )
-                self.print_to_object(f'printf("{tokens["ARG"].lexeme}");\n')
+                ARG = tokens["ARG"]
+                if ARG.type_name == 'literal':
+                    self.print_to_object(f'printf({ARG.lexeme});\n')
+                else:
+                    self.print_to_object(f'printf("{ARG.lexeme}");\n')
             
             case 14:
                 # ARG.atributos ← literal.atributos (Copiar todos os atributos de literal para os atributos de ARG).
-                literal = tokens['literal']
+                literal = tokens['lit']
                 left_token.lexeme = literal.lexeme
                 left_token.class_name = literal.class_name
                 left_token.type_name = literal.type_name
@@ -159,10 +173,10 @@ class SemanticRulesManager:
                 # |__________linha e coluna onde ocorreu o erro no fonte.
                 # Caso contrário emitir “Erro: Variável não declarada” ”, linha e coluna onde
                 # ocorreu o erro no fonte.
-                id_, atr, LD = tokens['id'], tokens['atr'], tokens['LD']
-                if id.type_name != 'Nulo':
+                id_, LD = tokens['id'], tokens['LD']
+                if id_.type_name != 'Nulo':
                     if id_.type_name == LD.type_name:
-                        self.print_to_object(f'{id_.lexeme} {atr.type_name} {LD.lexeme};\n')
+                        self.print_to_object(f'{id_.lexeme} = {LD.lexeme};\n')
                     else:
                         # TODO: Substituir por uma chamada a uma função mais genérica
                         # de tratamento de erros
@@ -185,11 +199,11 @@ class SemanticRulesManager:
                     temporary_variable = self.new_temporary_variable()
                     self.add_temporary_variable_to_object(temporary_variable, OPRD.type_name)
                     left_token.lexeme = temporary_variable
-                    self.print_to_object(f'{temporary_variable} = {OPRD.lexeme} {opm.lexeme} {OPRD_1.lexeme};')
+                    self.print_to_object(f'{temporary_variable} = {OPRD.lexeme} {opm.lexeme} {OPRD_1.lexeme};\n')
                 else:
                     # TODO: Substituir por uma chamada a uma função mais genérica
                     # de tratamento de erros
-                    print("Erro: Operandos com tipos incompatíveis!", id_.get_formatted_line_and_column())       
+                    print("Erro: Operandos com tipos incompatíveis!", OPRD_1.get_formatted_line_and_column())       
             
             case 20:
                 # LD.atributos ← OPRD.atributos (Copiar todos os atributos de OPRD para os atributos de LD).
@@ -222,12 +236,12 @@ class SemanticRulesManager:
             
             case 24:
                 # Imprimir ( } ) no arquivo objeto.
-                self.print_to_object("}")
+                self.print_to_object("}\n")
             
             case 25:
                 # Imprimir ( if (EXP_R.lexema) { ) no arquivo objeto.
                 EXP_R = tokens['EXP_R']
-                self.print_to_object(f"if ({EXP_R.lexeme}) "+ "{")
+                self.print_to_object(f"if ({EXP_R.lexeme}) " + "{\n")
             
             case 26:
                 OPRD = tokens['OPRD']
@@ -238,11 +252,11 @@ class SemanticRulesManager:
                     temporary_variable = self.new_temporary_variable()
                     left_token.lexeme = temporary_variable
                     self.add_temporary_variable_to_object(temporary_variable, OPRD.type_name)
-                    self.print_to_object(f"{temporary_variable} = {OPRD.lexeme} {opr.type_name} {OPRD_1.lexeme};") # opr.lexeme?
+                    self.print_to_object(f"{temporary_variable} = {OPRD.lexeme} {opr.lexeme} {OPRD_1.lexeme};\n")
                 else:
                     # TODO: Substituir por uma chamada a uma função mais genérica
                     # de tratamento de erros
-                    print("Erro: Operandos com tipos incompatíveis!", id_.get_formatted_line_and_column())
+                    print("Erro: Operandos com tipos incompatíveis!", OPRD_1.get_formatted_line_and_column())
                     
                 #
                 # Verificar se os tipos de dados de OPRD são iguais ou equivalentes para a realização de comparação relacional.
@@ -255,30 +269,44 @@ class SemanticRulesManager:
 
             
             case 31:
+                # A → R A
                 # (D) Verificar as necessidades e gerar as regras semânticas e de tradução.
+                # TODO: Remover caso (Aparentemente não há nenhuma regra semântica a ser executada)
                 pass
             
             case 32:
+                # R → CABR CPR
                 # (E) Verificar as necessidades e gerar as regras semânticas e de tradução.
-                pass
+                self.print_to_object("}\n")
             
             case 33:
+                # CABR → repita ab_p EXP_R fc_p 
                 # (F) Verificar as necessidades e gerar as regras semânticas e de tradução.
-                pass
+                EXP_R = tokens['EXP_R']
+                self.print_to_object(f"while ({EXP_R.lexeme}) " + "{\n")
             
             case 34:
+                # CPR → ES CPR
                 # (G) Verificar as necessidades e gerar as regras semânticas e de tradução.
+                # TODO: Remover caso (Aparentemente não há nenhuma regra semântica a ser executada)
                 pass
             
             case 35:
+                # CPR → CMD CPR
                 # (H) Verificar as necessidades e gerar as regras semânticas e de tradução.
+                # TODO: Remover caso (Aparentemente não há nenhuma regra semântica a ser executada)
                 pass
             
             case 36:
+                # CPR → COND CPR
                 # (I) Verificar as necessidades e gerar as regras semânticas e de tradução.
+                # TODO: Remover caso (Aparentemente não há nenhuma regra semântica a ser executada)
                 pass
             
             case 37:
+                # CPR → fimrepita
                 # (J) Verificar a necessidade de atualizar o que será utilizado em EXP_R para teste no repita;
                 # verificar a necessidade de gerar outras regras semânticas e de tradução além desta.
+
+                # TODO: Ver sobre "(J) Verificar a necessidade de atualizar o que será utilizado em EXP_R para teste no repita"
                 pass

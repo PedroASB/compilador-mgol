@@ -14,19 +14,24 @@ class ObjectFileManager:
         self.temporary_variables.append((name, type_name))
 
     def generate_final(self):
-        if not self.temp_file:
-            return False
         with open('./PROGRAMA.c', 'w+', encoding='utf-8') as file:
+            file = open('./PROGRAMA.c', 'w+', encoding='utf-8')
             file.write("#include <stdio.h>\n\n")
             file.write('typedef char string[256];\n\n')
             file.write("int main() {\n")
             file.write("\t/*----Variaveis temporarias----*/\n")
             for temporary_variable in self.temporary_variables:
                 name, type_name = temporary_variable[0], temporary_variable[1]
-                file.write(f'\t{type_name} {name};\n')
+                match type_name:
+                    case 'inteiro':
+                        file.write(f'\tint {name};\n')
+                    case 'real':
+                        file.write(f'\tdouble {name};\n')
             file.write("\t/*-----------------------------*/\n")
+            self.temp_file = open('./programa.temp', 'r', encoding='utf-8')
             lines = self.temp_file.readlines()
             for line in lines:
                 file.write('\t' + line)
             file.write("\treturn 0;\n")
             file.write("}")
+            file.close()
