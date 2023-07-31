@@ -15,23 +15,25 @@ class ObjectFileManager:
 
     def generate_final(self):
         with open('./PROGRAMA.c', 'w+', encoding='utf-8') as file:
-            file = open('./PROGRAMA.c', 'w+', encoding='utf-8')
             file.write("#include <stdio.h>\n\n")
-            file.write('typedef char string[256];\n\n')
+            file.write('typedef char string[1024];\n\n')
             file.write("int main() {\n")
+
             file.write("\t/*----Variaveis temporarias----*/\n")
             for temporary_variable in self.temporary_variables:
-                name, type_name = temporary_variable[0], temporary_variable[1]
-                match type_name:
-                    case 'inteiro':
-                        file.write(f'\tint {name};\n')
-                    case 'real':
-                        file.write(f'\tdouble {name};\n')
+                name = temporary_variable[0]
+                type_name = 'int' if temporary_variable[1] == 'inteiro' else 'double'
+                file.write(f'\t{type_name} {name};\n')
             file.write("\t/*-----------------------------*/\n")
+
             self.temp_file = open('./programa.temp', 'r', encoding='utf-8')
             lines = self.temp_file.readlines()
+            indentation = 1
             for line in lines:
-                file.write('\t' + line)
+                # TODO: Implementar a tabulação sem esse "workaround"
+                if '}' in line: indentation -= 1
+                file.write('\t'*indentation + line)
+                if '{' in line: indentation += 1
+
             file.write("\treturn 0;\n")
             file.write("}")
-            file.close()

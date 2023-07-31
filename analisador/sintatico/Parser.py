@@ -9,8 +9,8 @@ from analisador.sintatico.consts import productions
 
 class Parser:
     def __init__(self, lexer: Lexer, obj_file_manager: ObjectFileManager):
-        self.lexer: Lexer = lexer
-        self.semantic_rules_manager = SemanticRulesManager(self.lexer.symbol_table, obj_file_manager)
+        self.lexer = lexer
+        self.semantic_rules_manager = SemanticRulesManager(lexer, obj_file_manager)
         self.productions = productions
         self.tokens_queue = []
         self.action_table = ActionTable(r"./analisador/sintatico/tables/action.csv")

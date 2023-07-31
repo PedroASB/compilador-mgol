@@ -1,13 +1,13 @@
 from analisador.lexico.Token import Token
-from analisador.lexico.SymbolTable import SymbolTable
+from analisador.lexico.Lexer import Lexer
 from analisador.semantico.ObjectFileManager import ObjectFileManager
 from analisador.semantico.SemanticStack import SemanticStack
 from analisador.sintatico.consts import productions
 
 class SemanticRulesManager:
 
-    def __init__(self, symbol_table: SymbolTable, obj_file_manager: ObjectFileManager):
-        self.symbol_table = symbol_table
+    def __init__(self, lexer: Lexer, obj_file_manager: ObjectFileManager):
+        self.lexer = lexer
         self.obj_file_manager = obj_file_manager
         self.semantic_stack = SemanticStack()
         self.temporary_variable_counter = 0
@@ -23,7 +23,7 @@ class SemanticRulesManager:
         return self.semantic_stack.get_token(lexeme)
     
     def set_id_type(self, lexeme: str, type_name: str):
-        self.symbol_table.update_token_type(lexeme, type_name)
+        self.lexer.symbol_table.update_token_type(lexeme, type_name)
 
     def add_temporary_variable_to_object(self, name: str, type_name: str):
         self.obj_file_manager.add_temporary_variable(name, type_name)
@@ -46,6 +46,13 @@ class SemanticRulesManager:
         self.run_rule(production_index, tokens, left_token)
         # Empilha o token a que se foi reduzido
         self.semantic_stack.push(left_token)
+    
+    def print_error_message(self, error_message: str):
+        print('\033[1;31m◼\033[m' * 90)
+        # TODO: Ajustar linha e coluna
+        print("{:^100}".format('\033[31mERRO SEMÂNTICO - ' + self.lexer.get_formatted_line_and_column() + '\033[m'))
+        print("{:^100}".format('\033[31;1m' + error_message + '\033[m'))
+        print('\033[1;31m◼\033[m' * 90)
 
     def run_rule(self, production_index, tokens: dict[str, Token], left_token: Token):
         match production_index:
@@ -61,7 +68,6 @@ class SemanticRulesManager:
             case 6:
                 # L → id vir L
                 # (B) Amarração de atributos, organizar a passagem de valores do atributo.e)
-                # TODO: Ajustar esta regra
                 id_, L = tokens['id'], tokens['L']
                 left_token.type_name = L.type_name
                 self.set_id_type(id_.lexeme, left_token.type_name)
@@ -73,7 +79,6 @@ class SemanticRulesManager:
                 # L → id
                 # C) Ajustar o preenchimento de id.tipo na tabela de símbolos:
                 # Impressão do id no .obj
-                # TODO: Ajustar esta regra
                 left_token.type_name = self.get_token('TIPO').type_name
                 id_ = tokens['id']
                 self.set_id_type(id_.lexeme, left_token.type_name)
@@ -108,7 +113,8 @@ class SemanticRulesManager:
                     case _:
                         # TODO: Substituir por uma chamada a uma função mais genérica
                         # de tratamento de erros
-                        print("Erro: Variável não declarada!", id_.get_formatted_line_and_column())
+                        # print("Erro: Variável não declarada!", id_.get_formatted_line_and_column())
+                        self.print_error_message('Variável não declarada')
 
                 # Verificar se o campo tipo do identificador está preenchido indicando a
                 # declaração do identificador (execução da regra semântica de número 6).
@@ -159,10 +165,9 @@ class SemanticRulesManager:
                 else:
                     # TODO: Substituir por uma chamada a uma função mais genérica
                     # de tratamento de erros
-                    print("Erro: Variável não declarada!", id_.get_formatted_line_and_column())
-                
-                    
-            
+                    # print("Erro: Variável não declarada!", id_.get_formatted_line_and_column())
+                    self.print_error_message('Variável não declarada')
+
             case 18:
                 # Verificar se id foi declarado (execução da regra semântica de número 6). Se sim, então:
                 # |   Realizar verificação do tipo entre os operandos id e LD (ou seja,
@@ -180,12 +185,14 @@ class SemanticRulesManager:
                     else:
                         # TODO: Substituir por uma chamada a uma função mais genérica
                         # de tratamento de erros
-                        print("Erro: Atribuição com tipos diferentes!", id_.get_formatted_line_and_column())
+                        # print("Erro: Atribuição com tipos diferentes!", id_.get_formatted_line_and_column())
+                        self.print_error_message('Atribuição com tipos diferentes')
                 else:
                     # TODO: Substituir por uma chamada a uma função mais genérica
                     # de tratamento de erros
-                    print("Erro: Variável não declarada!", id_.get_formatted_line_and_column())
-            
+                    # print("Erro: Variável não declarada!", id_.get_formatted_line_and_column())
+                    self.print_error_message('Variável não declarada')
+
             case 19:
                 # Verificar se tipo dos operandos de de LD são equivalentes e diferentes de literal.
                 # Se sim, então:
@@ -199,11 +206,13 @@ class SemanticRulesManager:
                     temporary_variable = self.new_temporary_variable()
                     self.add_temporary_variable_to_object(temporary_variable, OPRD.type_name)
                     left_token.lexeme = temporary_variable
+                    left_token.type_name = OPRD.type_name
                     self.print_to_object(f'{temporary_variable} = {OPRD.lexeme} {opm.lexeme} {OPRD_1.lexeme};\n')
                 else:
                     # TODO: Substituir por uma chamada a uma função mais genérica
                     # de tratamento de erros
-                    print("Erro: Operandos com tipos incompatíveis!", OPRD_1.get_formatted_line_and_column())       
+                    # print("Erro: Operandos com tipos incompatíveis!", OPRD_1.get_formatted_line_and_column())
+                    self.print_error_message('Operandos com tipos incompatíveis')
             
             case 20:
                 # LD.atributos ← OPRD.atributos (Copiar todos os atributos de OPRD para os atributos de LD).
@@ -225,7 +234,8 @@ class SemanticRulesManager:
                 else:
                     # TODO: Substituir por uma chamada a uma função mais genérica
                     # de tratamento de erros
-                    print("Erro: Variável não declarada!", id_.get_formatted_line_and_column())
+                    # print("Erro: Variável não declarada!", id_.get_formatted_line_and_column())
+                    self.print_error_message('Variável não declarada')
             
             case 22:
                 # OPRD.atributos ← num.atributos (Copiar todos os atributos de num para os atributos de OPRD).
@@ -251,12 +261,14 @@ class SemanticRulesManager:
                 if OPRD.type_name == OPRD_1.type_name:
                     temporary_variable = self.new_temporary_variable()
                     left_token.lexeme = temporary_variable
+                    left_token.type_name = OPRD.type_name
                     self.add_temporary_variable_to_object(temporary_variable, OPRD.type_name)
                     self.print_to_object(f"{temporary_variable} = {OPRD.lexeme} {opr.lexeme} {OPRD_1.lexeme};\n")
                 else:
                     # TODO: Substituir por uma chamada a uma função mais genérica
                     # de tratamento de erros
-                    print("Erro: Operandos com tipos incompatíveis!", OPRD_1.get_formatted_line_and_column())
+                    # print("Erro: Operandos com tipos incompatíveis!", OPRD_1.get_formatted_line_and_column())
+                    self.print_error_message('Operandos com tipos incompatíveis')
                     
                 #
                 # Verificar se os tipos de dados de OPRD são iguais ou equivalentes para a realização de comparação relacional.
@@ -266,7 +278,6 @@ class SemanticRulesManager:
                 #     Imprimir (Tx = OPRD.lexema opr.tipo OPRD.lexema) no arquivo objeto.
                 # Caso contrário emitir “Erro: Operandos com tipos incompatíveis” ”, linha e coluna onde ocorreu o erro no fonte.
                 #
-
             
             case 31:
                 # A → R A
