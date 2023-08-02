@@ -80,6 +80,9 @@ class Lexer:
             if token.class_name == 'ID':
                 if not self.symbol_table.has_token(token):
                     self.symbol_table.insert_token(token)
+                else:
+                    token_instance = self.symbol_table.get_token(token.lexeme)
+                    token_instance.line, token_instance.column = self.line, self.column
                 return self.symbol_table.get_token(token.lexeme)
             else:
                 return token
