@@ -1,7 +1,6 @@
 import csv
 
 class GotoTable:
-    # transition: tupla[estado, não terminal, novo estado]
     def __init__(self, csv_goto_file):
         csvfile = csv.reader(open(csv_goto_file, 'r', encoding='utf-8'))
         header = next(csvfile)

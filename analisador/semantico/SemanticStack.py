@@ -22,7 +22,7 @@ class SemanticStack:
             renamed_token_template.append(token_name + ('_' + str(names_counter[token_name]) if names_counter[token_name] > 0 else ''))
             names_counter[token_name] += 1
 
-        return {token_name: token for token_name, token in zip(renamed_token_template, tokens)}
+        return {token_name: token for token_name, token in zip(renamed_token_template, tokens)}, tokens
 
     def push(self, value: Token):
         self.stack.append(value)

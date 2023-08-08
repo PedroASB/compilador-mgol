@@ -32,7 +32,6 @@ class Parser:
                     self.semantic_rules_manager.push_token(current_token)
                     current_token = self.get_next_token()
                     current_state = stack.get()
-                    # self.semantic_rules_manager.print_stack()
                 case ('r', reduce_production):
                     production = self.productions[reduce_production]
                     stack.pop(production.cardinality)
@@ -41,13 +40,12 @@ class Parser:
                     print(reduce_production, production)
                     self.semantic_rules_manager.invoke_rule(reduce_production)
                     current_state = stack.get()
-                    # self.semantic_rules_manager.print_stack()
                 case ('a', _):
                     return not error_flag
                 case ('e', _):
                     error_flag = True
                     error_line_and_column: str = self.lexer.get_formatted_line_and_column()
-                    possible_tokens = [Token.tokenify(token) for token in self.get_expected_tokens_at_state(current_state)]
+                    possible_tokens = [Token.tokenify(token, self.lexer.line, self.lexer.column) for token in self.get_expected_tokens_at_state(current_state)]
                     
                     recovery_method = None
                     recovery_token = None
@@ -117,7 +115,6 @@ class Parser:
         current_simulated_state = current_state
         while True:
             if current_simulated_state == last_simulated_state:
-                # Loop detectado
                 return False
             action_given_possible_token = self.action_table.get_action(current_simulated_state, possible_token.class_name)
             match action_given_possible_token:
@@ -147,20 +144,24 @@ class Parser:
     
     def print_error_message(self, current_token: Token, possible_tokens: list[Token], 
                             recovery_method: str, recovery_token: Token, formatted_line_and_column: str):
-        print('\033[1;31m◼\033[m' * 90)
-        print("{:^100}".format('\033[31mERRO SINTÁTICO - ' + formatted_line_and_column + '\033[m'))
-        print("{:^100}".format('\033[31m' + 'Esperado: \033[3;31m' + ' '.join(token.class_name for token in possible_tokens) + '\033[m'))
-        print("{:^100}".format('\033[31m' + 'Recebido: \033[3;31m' + current_token.class_name + '\033[m'))
+        print('\033[1;31m▒\033[m' * 90)
+        print("{:^100}".format('\033[31;1mERRO SINTÁTICO\033[0;31m - ' + formatted_line_and_column + '\033[m\n'))
+        if len(possible_tokens) <= 1:
+            print("{:^100}".format('\033[1;31m' + 'Esperado: \033[0m\033[3;31m' + possible_tokens[0].get_friendly_name() + '\033[m'))
+        else:
+            print("{:^140}".format('\033[1;31m' + 'Esperado: \033[0m\033[3;31m' + ', '.join([token.get_friendly_name() for token in possible_tokens][:-1]) + ' \033[m\033[1;31m\033[4;31mou\033[3;31m\033[0;31m\033[3;31m ' + possible_tokens[-1].get_friendly_name() + '\033[m'))
+            
+        print("{:^100}".format('\033[1;31m' + 'Recebido: \033[0m\033[3;31m' + current_token.get_friendly_name() + '\033[m\n'))
         match recovery_method:
             case 'wrong_token':
-                print("{:^100}".format(f"\033[1;32mErro recuperado a nível de frase - Substituição do token '{current_token.class_name}' por '{recovery_token.class_name}'\033[m"))
+                print("{:^110}".format(f"\033[1;32mErro recuperado a nível de frase\033[0;32m - Substituição do '{current_token.get_friendly_name()}' por '{recovery_token.get_friendly_name()}'\033[m"))
             case 'excessive_token':
-                print("{:^100}".format(f"\033[1;32mErro recuperado a nível de frase - Deleção do token '{current_token.class_name}'\033[m"))
+                print("{:^110}".format(f"\033[1;32mErro recuperado a nível de frase\033[0;32m - Deleção do '{current_token.get_friendly_name()}'\033[m"))
             case 'missing_token':
-                print("{:^100}".format(f"\033[1;32mErro recuperado a nível de frase - Inserção do token '{recovery_token.class_name}'\033[m"))
+                print("{:^110}".format(f"\033[1;32mErro recuperado a nível de frase\033[0;32m - Inserção do '{recovery_token.get_friendly_name()}'\033[m"))
             case 'panic':
-                print("{:^100}".format("\033[1;32mErro recuperado pelo modo pânico\033[m"))
+                print("{:^110}".format("\033[1;32mErro recuperado pelo modo pânico\033[m"))
             case None:
-                print("{:^100}".format("\033[1;31mNão foi possível recuperar o erro\033[m"))
-        print('\033[1;31m◼\033[m' * 90)
+                print("{:^110}".format("\033[1;31mNão foi possível recuperar o erro\033[m"))
+        print('\033[1;31m▒\033[m' * 90)
 

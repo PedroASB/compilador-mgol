@@ -14,5 +14,5 @@ Compilador Mgol escrito em Python
     - [x] Corrigir a ordem das variáveis na impressão das declarações
     - [x] Ajustar linha e coluna do print_error_message do semântico
     - [x] Ver sobre a tabulação (if dentro de if, etc.)
-    - [] Item (J): Verificar a necessidade de atualizar o que será utilizado em EXP_R para teste no repita
-    - [] Realizar vários testes
+    - [x] Item (J): Verificar a necessidade de atualizar o que será utilizado em EXP_R para teste no repita
+    - [X] Realizar vários testes

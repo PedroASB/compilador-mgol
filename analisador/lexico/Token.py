@@ -1,3 +1,5 @@
+from analisador.sintatico.consts import friendly_names
+
 class Token:
     def __init__(self, lexeme, class_name, type_name, line, column):
         self.lexeme = lexeme
@@ -7,11 +9,17 @@ class Token:
         self.column = column
     
     @staticmethod
-    def tokenify(lexeme):
-        return Token(lexeme, lexeme, lexeme, -1, -1)
+    def tokenify(lexeme, line = -1, column = -1):
+        return Token(lexeme, lexeme, lexeme, line, column)
     
     def get_formatted_line_and_column(self):
         return f"Linha: {self.line}, Coluna: {self.column}"
+    
+    def get_friendly_name(self):
+        try:
+            return friendly_names[self.class_name.upper()]
+        except KeyError:
+            return self.class_name
     
     def __str__(self):
         return f"Token(lexema={self.lexeme}, classe={self.class_name}, tipo={self.type_name})"

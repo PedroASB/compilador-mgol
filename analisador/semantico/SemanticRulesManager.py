@@ -42,62 +42,57 @@ class SemanticRulesManager:
 
     def invoke_rule(self, production_index):
         production = productions[production_index]
-        # Obtêm-se os elementos do lado direito da produção
-        tokens = self.semantic_stack.get_named_tokens(production.right)
-        # Cria-se o token do lado esquerdo ao qual se foi reduzido o lado direito da produção
-        left_token = Token.tokenify(production.left)
-        # Executa a regra semântica
-        self.run_rule(production_index, tokens, left_token)
-        # Empilha o token a que se foi reduzido
+        named_tokens, tokens_list = self.semantic_stack.get_named_tokens(production.right)
+        left_token = Token.tokenify(production.left, tokens_list[-1].line, tokens_list[-1].column)
+        self.run_rule(production_index, named_tokens, left_token)
         self.semantic_stack.push(left_token)
     
     def print_error_message(self, error_message: str, last_production_token: Token):
         print('\033[1;31m◼\033[m' * 90)
-        # TODO: Ajustar linha e coluna
         print("{:^100}".format('\033[31mERRO SEMÂNTICO - ' + last_production_token.get_formatted_line_and_column() + '\033[m'))
         print("{:^100}".format('\033[31;1m' + error_message + '\033[m'))
         print('\033[1;31m◼\033[m' * 90)
 
     def run_rule(self, production_index, tokens: dict[str, Token], left_token: Token):
-        match production_index:
-            case 4:
+        match production_index + 1:
+            case 5:
                 self.print_to_object('\n')
 
-            case 5:
+            case 6:
                 qtt_variables = len(self.variable_list)
                 for index, variable in enumerate(self.variable_list[::-1]):
                     self.print_to_object(' ' + variable.lexeme + (',' if index != qtt_variables - 1 else ''))
                 self.print_to_object(';\n')
                 self.variable_list = []
 
-            case 6:
+            case 7:
                 id_, L = tokens['id'], tokens['L']
                 left_token.type_name = L.type_name
                 self.set_id_type(id_.lexeme, left_token.type_name)
                 self.variable_list.append(id_)
             
-            case 7:
+            case 8:
                 left_token.type_name = self.get_type_token().type_name
                 id_ = tokens['id']
                 self.set_id_type(id_.lexeme, left_token.type_name)
                 self.variable_list.append(id_)
 
-            case 8:
+            case 9:
                 inteiro = tokens['inteiro']
                 left_token.type_name = inteiro.type_name
                 self.print_to_object('int')
 
-            case 9:
+            case 10:
                 real = tokens['real']
                 left_token.type_name = real.type_name
                 self.print_to_object('double')
 
-            case 10:
+            case 11:
                 literal = tokens['literal']
                 left_token.type_name = literal.type_name
                 self.print_to_object('string')
 
-            case 12:
+            case 13:
                 id_ = tokens['id']
                 match id_.type_name:
                     case 'literal':
@@ -109,7 +104,7 @@ class SemanticRulesManager:
                     case _:
                         self.print_error_message('Variável não declarada', id_)
 
-            case 13:
+            case 14:
                 ARG = tokens["ARG"]
                 match ARG.type_name:
                     case 'literal':
@@ -119,19 +114,19 @@ class SemanticRulesManager:
                     case 'real':
                         self.print_to_object(f'printf("%lf", {ARG.lexeme});\n')
             
-            case 14:
+            case 15:
                 literal = tokens['lit']
                 left_token.lexeme = literal.lexeme
                 left_token.class_name = literal.class_name
                 left_token.type_name = literal.type_name
 
-            case 15:
+            case 16:
                 num = tokens['num']
                 left_token.lexeme = num.lexeme
                 left_token.class_name = num.class_name
                 left_token.type_name = num.type_name
             
-            case 16:
+            case 17:
                 id_ = tokens['id']
                 if id_.type_name != 'Nulo':
                     left_token.lexeme = id_.lexeme
@@ -140,7 +135,7 @@ class SemanticRulesManager:
                 else:
                     self.print_error_message('Variável não declarada', id_)
 
-            case 18:
+            case 19:
                 id_, LD, pt_v = tokens['id'], tokens['LD'], tokens['pt_v']
                 if id_.type_name != 'Nulo':
                     if id_.type_name == LD.type_name:
@@ -150,13 +145,7 @@ class SemanticRulesManager:
                 else:
                     self.print_error_message('Variável não declarada', pt_v)
 
-            case 19:
-                # Verificar se tipo dos operandos de de LD são equivalentes e diferentes de literal.
-                # Se sim, então:
-                #     Gerar uma variável numérica temporária Tx, em que x é um número gerado sequencialmente.
-                #     LD.lexema ← Tx
-                #     Imprimir (Tx = OPRD.lexema opm.tipo OPRD.lexema) no arquivo objeto.
-                # Caso contrário emitir “Erro: Operandos com tipos incompatíveis” ”, linha e coluna onde ocorreu o erro no fonte.
+            case 20:
                 OPRD, opm, OPRD_1 = tokens["OPRD"], tokens['opm'], tokens["OPRD_1"]
                 if OPRD.type_name == OPRD_1.type_name != 'literal':
                     temporary_variable = self.new_temporary_variable()
@@ -167,12 +156,12 @@ class SemanticRulesManager:
                 else:
                     self.print_error_message('Operandos com tipos incompatíveis', OPRD_1)
             
-            case 20:
+            case 21:
                 left_token.lexeme = tokens['OPRD'].lexeme
                 left_token.class_name = tokens['OPRD'].class_name
                 left_token.type_name = tokens['OPRD'].type_name
             
-            case 21:
+            case 22:
                 id_ = tokens['id']
                 if id_.type_name != 'Nulo':
                     left_token.lexeme = id_.lexeme
@@ -181,20 +170,20 @@ class SemanticRulesManager:
                 else:
                     self.print_error_message('Variável não declarada', id_)
             
-            case 22:
+            case 23:
                 num = tokens['num']
                 left_token.lexeme = num.lexeme
                 left_token.class_name = num.class_name
                 left_token.type_name = num.type_name
             
-            case 24:
+            case 25:
                 self.print_to_object("}\n")
             
-            case 25:
+            case 26:
                 EXP_R = tokens['EXP_R']
                 self.print_to_object(f"if ({EXP_R.lexeme}) " + "{\n")
             
-            case 26:
+            case 27:
                 OPRD = tokens['OPRD']
                 opr = tokens['opr']
                 OPRD_1 = tokens['OPRD_1']
@@ -207,30 +196,10 @@ class SemanticRulesManager:
                     self.print_to_object(f"{temporary_variable} = {OPRD.lexeme} {opr.lexeme} {OPRD_1.lexeme};\n")
                 else:
                     self.print_error_message('Operandos com tipos incompatíveis', OPRD_1)
-            
-            case 31:
-                # TODO: Remover caso (Aparentemente não há nenhuma regra semântica a ser executada)
-                pass
-            
-            case 32:
+
+            case 33:
                 self.print_to_object("}\n")
             
-            case 33:
+            case 34:
                 EXP_R = tokens['EXP_R']
                 self.print_to_object(f"while ({EXP_R.lexeme}) " + "{\n")
-            
-            case 34:
-                # TODO: Remover caso (Aparentemente não há nenhuma regra semântica a ser executada)
-                pass
-            
-            case 35:
-                # TODO: Remover caso (Aparentemente não há nenhuma regra semântica a ser executada)
-                pass
-            
-            case 36:
-                # TODO: Remover caso (Aparentemente não há nenhuma regra semântica a ser executada)
-                pass
-            
-            case 37:
-                # TODO: Ver sobre "(J) Verificar a necessidade de atualizar o que será utilizado em EXP_R para teste no repita"
-                pass

@@ -30,7 +30,6 @@ class ObjectFileManager:
             lines = self.temp_file.readlines()
             indentation = 1
             for line in lines:
-                # TODO: Implementar a tabulação sem esse "workaround"
                 if '}' in line: indentation -= 1
                 file.write('\t'*indentation + line)
                 if '{' in line: indentation += 1
