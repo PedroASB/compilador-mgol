@@ -34,5 +34,5 @@ class ObjectFileManager:
                 file.write('\t'*indentation + line)
                 if '{' in line: indentation += 1
 
-            file.write("\treturn 0;\n")
+            file.write("\n\treturn 0;\n")
             file.write("}")

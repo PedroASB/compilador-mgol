@@ -22,12 +22,17 @@ class SemanticRulesManager:
   
     def get_type_token(self) -> Token | None:
         try:
-            return [l for l in self.semantic_stack.stack if l.lexeme == 'TIPO'][-1] 
+            return [l for l in self.semantic_stack.stack if l.lexeme == 'TIPO'][-1]
         except IndexError:
             return None
     
     def set_id_type(self, lexeme: str, type_name: str):
-        self.lexer.symbol_table.update_token_type(lexeme, type_name)
+        symbol_table = self.lexer.symbol_table
+        token = symbol_table.get_token(lexeme)
+        if token.type_name == 'Nulo':
+            symbol_table.update_token_type(lexeme, type_name)
+        else:
+            self.print_error_message('Redeclaração de variável', token)
 
     def add_temporary_variable_to_object(self, name: str, type_name: str):
         self.obj_file_manager.add_temporary_variable(name, type_name)
@@ -59,9 +64,8 @@ class SemanticRulesManager:
                 self.print_to_object('\n')
 
             case 6:
-                qtt_variables = len(self.variable_list)
                 for index, variable in enumerate(self.variable_list[::-1]):
-                    self.print_to_object(' ' + variable.lexeme + (',' if index != qtt_variables - 1 else ''))
+                    self.print_to_object(' ' + variable.lexeme + (',' if index != len(self.variable_list) - 1 else ''))
                 self.print_to_object(';\n')
                 self.variable_list = []
 
@@ -70,7 +74,7 @@ class SemanticRulesManager:
                 left_token.type_name = L.type_name
                 self.set_id_type(id_.lexeme, left_token.type_name)
                 self.variable_list.append(id_)
-            
+
             case 8:
                 left_token.type_name = self.get_type_token().type_name
                 id_ = tokens['id']
@@ -113,7 +117,7 @@ class SemanticRulesManager:
                         self.print_to_object(f'printf("%d", {ARG.lexeme});\n')
                     case 'real':
                         self.print_to_object(f'printf("%lf", {ARG.lexeme});\n')
-            
+
             case 15:
                 literal = tokens['lit']
                 left_token.lexeme = literal.lexeme
@@ -125,7 +129,7 @@ class SemanticRulesManager:
                 left_token.lexeme = num.lexeme
                 left_token.class_name = num.class_name
                 left_token.type_name = num.type_name
-            
+
             case 17:
                 id_ = tokens['id']
                 if id_.type_name != 'Nulo':
@@ -155,12 +159,12 @@ class SemanticRulesManager:
                     self.print_to_object(f'{temporary_variable} = {OPRD.lexeme} {opm.lexeme} {OPRD_1.lexeme};\n')
                 else:
                     self.print_error_message('Operandos com tipos incompatíveis', OPRD_1)
-            
+
             case 21:
                 left_token.lexeme = tokens['OPRD'].lexeme
                 left_token.class_name = tokens['OPRD'].class_name
                 left_token.type_name = tokens['OPRD'].type_name
-            
+
             case 22:
                 id_ = tokens['id']
                 if id_.type_name != 'Nulo':
@@ -169,20 +173,20 @@ class SemanticRulesManager:
                     left_token.type_name = id_.type_name
                 else:
                     self.print_error_message('Variável não declarada', id_)
-            
+
             case 23:
                 num = tokens['num']
                 left_token.lexeme = num.lexeme
                 left_token.class_name = num.class_name
                 left_token.type_name = num.type_name
-            
+
             case 25:
                 self.print_to_object("}\n")
             
             case 26:
                 EXP_R = tokens['EXP_R']
                 self.print_to_object(f"if ({EXP_R.lexeme}) " + "{\n")
-            
+
             case 27:
                 OPRD = tokens['OPRD']
                 opr = tokens['opr']
@@ -199,7 +203,7 @@ class SemanticRulesManager:
 
             case 33:
                 self.print_to_object("}\n")
-            
+
             case 34:
                 EXP_R = tokens['EXP_R']
                 self.print_to_object(f"while ({EXP_R.lexeme}) " + "{\n")
