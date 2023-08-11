@@ -1,8 +1,8 @@
-{TOKENS ERRADOS}
+{ERROS SINTATICOS - MODO PANICO}
 inicio
-    iniciovar {'iniciovar' no lugar de 'varinicio'}
+    varinicio
         literal A;
-        inteiro B, D, E;
+        fimse fimrepita B, D, E;
         real C;
     varfim;
     escreva "Digite B:";
@@ -19,11 +19,11 @@ inicio
     B<-B+3;
     D<-B;
     C<-5.0;
-    repita (B - 5) {'-' no lugar de <EXP_R>}
+    repita (B<5)
         C<-B+2;
         escreva C;
         B<-B+1;
-    fimse {'fimse' no lugar de 'fimrepita'}
+    fimrepita
     escreva "\nB=\n";
     escreva D;
     escreva "\n";

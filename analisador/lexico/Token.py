@@ -7,6 +7,7 @@ class Token:
         self.type_name = type_name
         self.line = line
         self.column = column
+        self.generic_info = {}
     
     @staticmethod
     def tokenify(lexeme, line = -1, column = -1):

@@ -30,5 +30,4 @@ mgol_parser = Parser(mgol_lexer, obj_file_manager)
 print('\033[1m='*90)
 print(f"{'PARSER':^90}")
 print('\033[1m=\033[m'*90)
-if mgol_parser.parse():
-    obj_file_manager.generate_final()
+mgol_parser.parse()

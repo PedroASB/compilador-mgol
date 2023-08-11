@@ -25,6 +25,7 @@ class Lexer:
         self.input_reader.seek(0)
         self.load_next_symbol_and_increment_column()
         self.token_iterator = self.get_token_iterator()
+        self.error_flag = False
 
     def __del__(self):
         if self.input_reader:
@@ -96,6 +97,7 @@ class Lexer:
         return f"Linha: {self.line}, Coluna: {self.column}"
 
     def handle_error(self):
+        self.error_flag = True
         if self.current_symbol not in self.dfa.alphabet and self.is_in_initial_state():
             error_message = "Caractere não pertence ao alfabeto da linguagem"
         elif self.is_in_incomplete_comment_state():

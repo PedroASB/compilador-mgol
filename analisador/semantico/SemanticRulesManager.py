@@ -12,6 +12,7 @@ class SemanticRulesManager:
         self.semantic_stack = SemanticStack()
         self.temporary_variable_counter = 0
         self.variable_list: list[Token] = []
+        self.error_flag = False
 
     def print_stack(self):
         for item in self.semantic_stack.stack:
@@ -32,7 +33,7 @@ class SemanticRulesManager:
         if token.type_name == 'Nulo':
             symbol_table.update_token_type(lexeme, type_name)
         else:
-            self.print_error_message('Redeclaração de variável', token)
+            self.handle_error(f"Redeclaração da variável '{token.lexeme}'", token)
 
     def add_temporary_variable_to_object(self, name: str, type_name: str):
         self.obj_file_manager.add_temporary_variable(name, type_name)
@@ -52,7 +53,8 @@ class SemanticRulesManager:
         self.run_rule(production_index, named_tokens, left_token)
         self.semantic_stack.push(left_token)
     
-    def print_error_message(self, error_message: str, last_production_token: Token):
+    def handle_error(self, error_message: str, last_production_token: Token):
+        self.error_flag = True
         print('\033[1;31m◼\033[m' * 90)
         print("{:^100}".format('\033[31mERRO SEMÂNTICO - ' + last_production_token.get_formatted_line_and_column() + '\033[m'))
         print("{:^100}".format('\033[31;1m' + error_message + '\033[m'))
@@ -106,7 +108,7 @@ class SemanticRulesManager:
                     case 'real':
                         self.print_to_object(f'scanf("%lf", &{id_.lexeme});\n')
                     case _:
-                        self.print_error_message('Variável não declarada', id_)
+                        self.handle_error(f"A variável '{id_.lexeme}' não foi declarada", id_)
 
             case 14:
                 ARG = tokens["ARG"]
@@ -137,7 +139,7 @@ class SemanticRulesManager:
                     left_token.class_name = id_.class_name
                     left_token.type_name = id_.type_name
                 else:
-                    self.print_error_message('Variável não declarada', id_)
+                    self.handle_error(f"A variável '{id_.lexeme}' não foi declarada", id_)
 
             case 19:
                 id_, LD, pt_v = tokens['id'], tokens['LD'], tokens['pt_v']
@@ -145,9 +147,9 @@ class SemanticRulesManager:
                     if id_.type_name == LD.type_name:
                         self.print_to_object(f'{id_.lexeme} = {LD.lexeme};\n')
                     else:
-                        self.print_error_message('Atribuição com tipos diferentes', pt_v)
+                        self.handle_error("Atribuição com tipos incompatíveis", pt_v)
                 else:
-                    self.print_error_message('Variável não declarada', pt_v)
+                    self.handle_error(f"A variável '{id_.lexeme}' não foi declarada", pt_v)
 
             case 20:
                 OPRD, opm, OPRD_1 = tokens["OPRD"], tokens['opm'], tokens["OPRD_1"]
@@ -158,7 +160,7 @@ class SemanticRulesManager:
                     left_token.type_name = OPRD.type_name
                     self.print_to_object(f'{temporary_variable} = {OPRD.lexeme} {opm.lexeme} {OPRD_1.lexeme};\n')
                 else:
-                    self.print_error_message('Operandos com tipos incompatíveis', OPRD_1)
+                    self.handle_error("Operandos com tipos incompatíveis", OPRD_1)
 
             case 21:
                 left_token.lexeme = tokens['OPRD'].lexeme
@@ -172,7 +174,7 @@ class SemanticRulesManager:
                     left_token.class_name = id_.class_name
                     left_token.type_name = id_.type_name
                 else:
-                    self.print_error_message('Variável não declarada', id_)
+                    self.handle_error(f"A variável '{id_.lexeme}' foi não declarada", id_)
 
             case 23:
                 num = tokens['num']
@@ -196,14 +198,20 @@ class SemanticRulesManager:
                     temporary_variable = self.new_temporary_variable()
                     left_token.lexeme = temporary_variable
                     left_token.type_name = OPRD.type_name
+                    left_token.generic_info['expression_string'] = f"{OPRD.lexeme} {opr.lexeme} {OPRD_1.lexeme}"
                     self.add_temporary_variable_to_object(temporary_variable, OPRD.type_name)
                     self.print_to_object(f"{temporary_variable} = {OPRD.lexeme} {opr.lexeme} {OPRD_1.lexeme};\n")
                 else:
-                    self.print_error_message('Operandos com tipos incompatíveis', OPRD_1)
+                    self.handle_error(f"Os operandos '{OPRD.lexeme}' e '{OPRD_1.lexeme}' possuem tipos incompatíveis", OPRD_1)
 
             case 33:
-                self.print_to_object("}\n")
+                CABR = tokens['CABR']
+                exp_r = CABR.generic_info['expression']
+                self.print_to_object(f"{exp_r.lexeme} = {exp_r.generic_info['expression_string']};")
+                self.print_to_object("\n}\n")
 
             case 34:
                 EXP_R = tokens['EXP_R']
-                self.print_to_object(f"while ({EXP_R.lexeme}) " + "{\n")
+                left_token.generic_info['expression'] = EXP_R
+                self.print_to_object(f"while ({EXP_R.lexeme})" + " {\n")
+                

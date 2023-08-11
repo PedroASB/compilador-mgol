@@ -1,0 +1,19 @@
+{TESTES}
+inicio
+    varinicio
+        inteiro A, B, C, D, E;
+        inteiro A;
+    varfim;
+
+    A <- 2;
+    X <- 7.0;
+
+    repita (A < 5)
+        C <- 10 + A;
+        A <- A + 1;
+        escreva C;
+        escreva "\n";
+    fimrepita
+
+
+fim
