@@ -1,3 +1,4 @@
+from collections import defaultdict
 from analisador.sintatico.consts import friendly_names
 
 class Token:
@@ -7,7 +8,7 @@ class Token:
         self.type_name = type_name
         self.line = line
         self.column = column
-        self.generic_info = {}
+        self.generic_info = defaultdict(lambda: '')
     
     @staticmethod
     def tokenify(lexeme, line = -1, column = -1):

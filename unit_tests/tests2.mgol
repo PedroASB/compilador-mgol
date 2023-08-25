@@ -1,0 +1,12 @@
+{TESTES 2}
+
+inicio
+varinicio
+    literal A, B;
+varfim;
+
+repita (B < 5)
+    leia A;
+fimrepita
+
+fim
