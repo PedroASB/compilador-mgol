@@ -102,11 +102,11 @@ class SemanticRulesManager:
                 id_ = tokens['id']
                 match id_.type_name:
                     case 'literal':
-                        self.print_to_object(f'scanf("%s", &{id_.lexeme});\n')
+                        self.print_to_object(f'scanf("%[^\\n]%*c", {id_.lexeme});\n')
                     case 'inteiro':
-                        self.print_to_object(f'scanf("%d", &{id_.lexeme});\n')
+                        self.print_to_object(f'scanf("%d%*c", &{id_.lexeme});\n')
                     case 'real':
-                        self.print_to_object(f'scanf("%lf", &{id_.lexeme});\n')
+                        self.print_to_object(f'scanf("%lf%*c", &{id_.lexeme});\n')
                     case _:
                         self.handle_error(f"A variável '{id_.lexeme}' não foi declarada", id_)
 
@@ -193,7 +193,6 @@ class SemanticRulesManager:
                 OPRD = tokens['OPRD']
                 opr = tokens['opr']
                 OPRD_1 = tokens['OPRD_1']
-
                 if OPRD.type_name == OPRD_1.type_name:
                     temporary_variable = self.new_temporary_variable()
                     left_token.lexeme = temporary_variable

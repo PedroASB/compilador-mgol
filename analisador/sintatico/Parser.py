@@ -149,7 +149,7 @@ class Parser:
     def print_error_message(self, current_token: Token, possible_tokens: list[Token], 
                             recovery_method: str, recovery_token: Token, formatted_line_and_column: str):
         self.error_flag = True
-        print('\033[1;31m▒\033[m' * 90)
+        print('\033[0;31m▦\033[m' * 90)
         print("{:^100}".format('\033[31;1mERRO SINTÁTICO\033[0;31m - ' + formatted_line_and_column + '\033[m\n'))
         if len(possible_tokens) <= 1:
             print("{:^100}".format('\033[1;31m' + 'Esperado: \033[0m\033[3;31m' + possible_tokens[0].get_friendly_name() + '\033[m'))
@@ -159,14 +159,14 @@ class Parser:
         print("{:^100}".format('\033[1;31m' + 'Recebido: \033[0m\033[3;31m' + current_token.get_friendly_name() + '\033[m\n'))
         match recovery_method:
             case 'wrong_token':
-                print("{:^110}".format(f"\033[1;32mErro recuperado a nível de frase\033[0;32m - Substituição do '{current_token.get_friendly_name()}' por '{recovery_token.get_friendly_name()}'\033[m"))
+                print("{:^110}".format(f"\033[1;32mErro recuperado a nível de frase\033[0;32m - Substituição de '{current_token.get_friendly_name()}' por '{recovery_token.get_friendly_name()}'\033[m"))
             case 'excessive_token':
-                print("{:^110}".format(f"\033[1;32mErro recuperado a nível de frase\033[0;32m - Deleção do '{current_token.get_friendly_name()}'\033[m"))
+                print("{:^110}".format(f"\033[1;32mErro recuperado a nível de frase\033[0;32m - Deleção de '{current_token.get_friendly_name()}'\033[m"))
             case 'missing_token':
-                print("{:^110}".format(f"\033[1;32mErro recuperado a nível de frase\033[0;32m - Inserção do '{recovery_token.get_friendly_name()}'\033[m"))
+                print("{:^110}".format(f"\033[1;32mErro recuperado a nível de frase\033[0;32m - Inserção de '{recovery_token.get_friendly_name()}'\033[m"))
             case 'panic':
                 print("{:^110}".format("\033[1;32mErro recuperado pelo modo pânico\033[m"))
             case None:
                 print("{:^110}".format("\033[1;31mNão foi possível recuperar o erro\033[m"))
-        print('\033[1;31m▒\033[m' * 90)
+        print('\033[0;31m▦\033[m' * 90)
         

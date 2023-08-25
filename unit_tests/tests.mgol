@@ -1,19 +1,76 @@
 {TESTES}
 inicio
     varinicio
-        inteiro A, B, C, D, E;
-        inteiro A;
+        inteiro A, B, C, D, I;
+        real x, y;
+        literal str;
     varfim;
 
-    A <- 2;
-    X <- 7.0;
 
-    repita (A < 5)
-        C <- 10 + A;
-        A <- A + 1;
+    {escreva "==========\n";
+    I <- 0;
+    repita (I < 50)
+        escreva "\nInt A >>> ";
+        leia A;
+        escreva "Int B >>> ";
+        leia B;
+        C <- A + B;
+        escreva "A + B = ";
         escreva C;
         escreva "\n";
-    fimrepita
+        C <- A - B;
+        escreva "A - B = ";
+        escreva C;
+        escreva "\n";
+        C <- A * B;
+        escreva "A * B = ";
+        escreva C;
+        escreva "\n";
+        C <- A / B;
+        escreva "A / B = ";
+        escreva C;
+        escreva "\n";
+    fimrepita}
 
+
+    escreva "Double >>> ";
+    leia x;
+    escreva "Valor = ";
+    escreva x;
+    escreva "\n";
+
+    escreva "String >>> ";
+    leia str;
+    escreva "Voce acabou de digitar: '";
+    escreva str;
+    escreva "'\n";
+    
+    escreva "Int A >>> ";
+    leia A;
+    escreva "Int B >>> ";
+    leia B;
+
+    se (A >= B) entao
+        C <- A - B;
+        escreva "A - B = ";
+        escreva C;
+        escreva "\n";
+    fimse
+
+    se (A < B) entao
+        C <- A * B;
+        escreva "A * B = ";
+        escreva C;
+        escreva "\n";
+    fimse
+
+    escreva "Loop: \n";
+    I <- 0;
+    repita (I < 5)
+        D <- 10 * I;
+        escreva D;
+        escreva "\n";
+        I <- I + 1;
+    fimrepita
 
 fim
