@@ -48,7 +48,6 @@ class Parser:
                         return True
                     return False
                 case ('e', _):
-                    self.error_flag = True
                     error_line_and_column: str = self.lexer.get_formatted_line_and_column()
                     possible_tokens = [Token.tokenify(token, self.lexer.line, self.lexer.column) for token in self.get_expected_tokens_at_state(current_state)]
                     
@@ -62,7 +61,7 @@ class Parser:
                     elif self.recover_panic(current_state):
                         recovery_method = "panic"
 
-                    self.print_error_message(current_token, possible_tokens, recovery_method, recovery_token, error_line_and_column)
+                    self.handle_error(current_token, possible_tokens, recovery_method, recovery_token, error_line_and_column)
                     if recovery_method is None:
                         return False
                     
@@ -146,7 +145,7 @@ class Parser:
                 return possible_token
         return None
     
-    def print_error_message(self, current_token: Token, possible_tokens: list[Token], 
+    def handle_error(self, current_token: Token, possible_tokens: list[Token], 
                             recovery_method: str, recovery_token: Token, formatted_line_and_column: str):
         self.error_flag = True
         print('\033[0;31m▦\033[m' * 90)

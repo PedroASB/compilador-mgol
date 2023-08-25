@@ -167,4 +167,4 @@ AL-NickolasCarlosCarvalhoSilva-PedroAugustoSerafimBelo-20231/
 *.temp
 
 # Executable files
-*.exe
+**/*.exe
