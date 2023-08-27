@@ -16,4 +16,3 @@ class ParserStack:
         top = self.get()
         self.pop()
         return top
-    

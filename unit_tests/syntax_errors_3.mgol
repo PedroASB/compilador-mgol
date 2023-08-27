@@ -1,4 +1,4 @@
-{TOKENS FALTANDO}
+{ERROS SINTATICOS - TOKENS FALTANDO}
 inicio
     varinicio
         literal A;

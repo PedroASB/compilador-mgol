@@ -161,3 +161,10 @@ cython_debug/
 
 # Compilers Work
 AL-NickolasCarlosCarvalhoSilva-PedroAugustoSerafimBelo-20231/
+
+# .c and .temp files
+*.c
+*.temp
+
+# Executable files
+**/*.exe

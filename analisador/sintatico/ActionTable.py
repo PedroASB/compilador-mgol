@@ -1,7 +1,6 @@
 import csv
 
 class ActionTable:
-    # action: tupla[estado, terminal, tupla[ação, produção]]
     def __init__(self, csv_actions_file):
         csvfile = csv.reader(open(csv_actions_file, 'r', encoding='utf-8'))
         header = next(csvfile)
