@@ -160,7 +160,7 @@ class SemanticRulesManager:
                     left_token.type_name = OPRD.type_name
                     self.print_to_object(f'{temporary_variable} = {OPRD.lexeme} {opm.lexeme} {OPRD_1.lexeme};\n')
                 else:
-                    self.handle_error("Operandos com tipos incompatíveis", OPRD_1)
+                    self.handle_error(f"Os operandos '{OPRD.lexeme}' e '{OPRD_1.lexeme}' possuem tipos incompatíveis", OPRD_1)
 
             case 21:
                 left_token.lexeme = tokens['OPRD'].lexeme

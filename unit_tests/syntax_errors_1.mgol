@@ -1,4 +1,5 @@
 {ERROS SINTATICOS - TOKENS ERRADOS}
+
 inicio
     iniciovar {'iniciovar' no lugar de 'varinicio'}
         literal A;

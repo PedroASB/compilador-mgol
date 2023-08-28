@@ -1,16 +1,17 @@
 {ERROS SINTATICOS - TOKENS EM EXCESSO}
+
 inicio
    varinicio
         literal A;
-        inteiro B, D,, E; {',' EM EXCESSO}
+        inteiro B, D,, E; {',' em excesso}
         real C;
     varfim;
     escreva "Digite B:";
-    leia A A; {'A' EM EXCESSO}
+    leia A A; {'A' em excesso}
     escreva "Digite A:";
     leia A;
-    C <- B ++ 2; {'+' EM EXCESSO}
+    C <- B ++ 2; {'+' em excesso}
     escreva C;
     escreva A;
-    B <- E * 5;; {';' EM EXCESSO}
+    B <- E * 5;; {';' em excesso}
 fim

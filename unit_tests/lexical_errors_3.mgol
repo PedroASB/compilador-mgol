@@ -1,0 +1,16 @@
+{ERROS LEXICOS}
+{Literal nao finalizado - Linha 16, Coluna 10}
+
+inicio
+varinicio
+literal A,B;
+inteiro D;
+real C ;
+varfim;
+escreva B;
+leia B;
+escreva "Digite A;
+leia A;
+se(B>2)
+entao
+se(B<=4)

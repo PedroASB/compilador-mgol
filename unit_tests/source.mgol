@@ -1,4 +1,5 @@
 {TESTES}
+
 inicio
     varinicio
         inteiro A, B, C, D, I;

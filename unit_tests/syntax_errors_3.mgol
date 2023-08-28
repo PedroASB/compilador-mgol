@@ -1,4 +1,5 @@
 {ERROS SINTATICOS - TOKENS FALTANDO}
+
 inicio
     varinicio
         literal A;
@@ -9,11 +10,11 @@ inicio
     leia B;
     escreva "Digite A:";
     leia A;
-    se (B>2) {FALTANDO "entao"}
+    se (B>2) {faltando "entao"}
         se (B<=4) entao
             escreva "B esta entre 2 e 4";
         fimse
     fimse
 
-    B {FALTANDO "<-"} B+1;
+    B {faltando "<-"} B+1;
 fim

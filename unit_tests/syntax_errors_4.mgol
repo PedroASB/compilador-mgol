@@ -1,4 +1,5 @@
 {ERROS SINTATICOS - MODO PANICO}
+
 inicio
     varinicio
         literal A;

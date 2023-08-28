@@ -1,0 +1,18 @@
+{ERROS SEMANTICOS}
+
+inicio
+    varinicio
+        inteiro A, B, C, B;     {Redeclaracao da variavel 'B'}
+        real x, y, C;           {Redeclaracao da variavel 'C'}
+        literal l;
+    varfim;
+
+    leia A;
+    A <- 3.0;                   {Atribuicao com tipos incompativeis}
+    x <- l + 2;                 {Atribuicao e operandos com tipos incompativeis}
+    escreva D;                  {Variavel 'D' nao declarada}
+
+    repita (x < 5)              {Operandos com tipos incompativeis}
+        leia A;
+    fimrepita
+fim

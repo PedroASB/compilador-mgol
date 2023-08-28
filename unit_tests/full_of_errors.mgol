@@ -1,4 +1,5 @@
 {ERROS LEXICOS, SINTATICOS E SEMANTICOS}
+
 inicio
     iniciovar {Erro sintatico - 'iniciovar' no lugar de 'varinicio'}
         literal A;

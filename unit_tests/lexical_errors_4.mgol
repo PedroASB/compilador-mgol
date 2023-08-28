@@ -1,0 +1,10 @@
+{ERROS LEXICOS}
+{Caractere nao esperado - Linha 8, Coluna 8}
+{Caractere nao esperado - Linha 10, Coluna 7}
+
+inicio
+varinicio
+literal A,B;
+inteir.o B;
+inteiro D;
+real _underlineNoInicio C ;
