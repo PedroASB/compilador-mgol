@@ -5,7 +5,7 @@
 
 
 ## Descrição
-- Trabalho desenvolvido como estudo de caso durante a disciplina de Compiladores do curso de Ciência da Computação (:school: [Universidade Federal de Goiás](<https://ufg.br/>)).
+- Trabalho desenvolvido como estudo de caso durante a disciplina de Compiladores do curso de Ciência da Computação (🏫 [Universidade Federal de Goiás](<https://ufg.br/>)).
 - O programa consiste em um compilador da linguagem fictícia Mgol. Recebe-se como entrada um arquivo contendo o código-fonte escrito em Mgol e é produzido um código em C como saída.
 - Linguagem utilizada para a implementação: **Python** (versão 3.11.3).
 
@@ -38,7 +38,7 @@ Palavras reservadas presentes na linguagem:
 - `fim`: delimita o fim do programa.
 - `varinicio`: delimita o início da declaração de variáveis.
 - `varfim`: delimita o fim da declaração de variáveis.
-- `leia`: lê da saída padrão.
+- `leia`: lê da entrada padrão.
 - `escreva`: imprime na saída padrão.
 - `se`: delimita o início de uma estrutura condicional.
 - `entao`: elemento de uma estrutura condicional.
